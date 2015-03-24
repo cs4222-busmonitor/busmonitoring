@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Bus Monitoring</string>
+    <string name="text_name">Name:</string>
+    <string name="text_vehicle">Vehicle No.:</string>
+    <string name="text_routes">Route:</string>
+    <string name="btn_start">Start</string>
+    <string name="dropdown_routes_text">Select a route</string>
+
+    <string-array name="dropdown_routes">
+        <item>A1</item>
+        <item>A2</item>
+        <item>A2E</item>
+        <item>B</item>
+        <item>BTC1</item>
+        <item>BTC2</item>
+        <item>C</item>
+        <item>D1</item>
+        <item>D2</item>
+    </string-array>
+
+    <integer name="editMaxLines">1</integer>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_route">Route Activity</string>
+    <string name="title_tab_info">Information</string>
+    <string name="title_tab_route">Route</string>
+    <string name="action_settings">Setting</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_tab">TabActivity</string>
+
+
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="title_activity_info">InfoActivity</string>
+
+</resources>
