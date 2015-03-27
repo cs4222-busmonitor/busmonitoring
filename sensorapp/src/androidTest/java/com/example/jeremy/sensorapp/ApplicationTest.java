@@ -1,4 +1,4 @@
-package com.example.sensorapp;
+package com.example.jeremy.sensorapp;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

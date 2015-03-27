@@ -1,4 +1,4 @@
-package com.example.sensorapp;
+package com.example.jeremy.sensorapp;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
