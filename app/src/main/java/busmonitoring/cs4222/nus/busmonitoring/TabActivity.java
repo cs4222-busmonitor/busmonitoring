@@ -115,8 +115,8 @@ public class TabActivity extends ActionBarActivity implements View.OnClickListen
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+       // mViewPager = (ViewPager) findViewById(R.id.pager);
+       // mViewPager.setAdapter(mSectionsPagerAdapter);
     }
 
     /** Helper method to initialise GUI. */
