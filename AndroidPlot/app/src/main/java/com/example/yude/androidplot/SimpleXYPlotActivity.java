@@ -3,7 +3,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.*;
@@ -13,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 /**
@@ -38,6 +39,10 @@ public class SimpleXYPlotActivity extends Activity
     private final static int INDEX_GYRO_DATA_Y = 4;
     private final static int INDEX_GYRO_DATA_Z = 5;
     private final static int INDEX_GYRO_DATA_TIMEBEFOREPREV = 6;
+
+    // Used for moving average smoothening
+    private final static int MAX_MOVINGAVG_POINTS = 50;
+    private final static int DEFAULT_SMOOTHENING_NUMPOINTS = 10;
 
 
     private XYPlot plot;
@@ -68,9 +73,9 @@ public class SimpleXYPlotActivity extends Activity
         BufferedReader bufReader_Gyro;
 
         // For tokenization later
-        ArrayList<ArrayList<String> > tokens_Accel = new ArrayList<ArrayList<String> >();
-        ArrayList<ArrayList<String> > tokens_Baro = new ArrayList<ArrayList<String> >();
-        ArrayList<ArrayList<String> > tokens_Gyro = new ArrayList<ArrayList<String> >();
+        ArrayList<ArrayList<String> > tokens_Accel = new ArrayList<>();
+        ArrayList<ArrayList<String> > tokens_Baro = new ArrayList<>();
+        ArrayList<ArrayList<String> > tokens_Gyro = new ArrayList<>();
         try {
             bufReader_Accel = getBufReaderFromAssets(FILENAME_ACCEL_DATA);
             bufReader_Baro = getBufReaderFromAssets(FILENAME_BARO_DATA);
@@ -104,6 +109,18 @@ public class SimpleXYPlotActivity extends Activity
         list_Accel_Time = getCumulativeSumList(list_Accel_TimeBeforePrev);
         list_Baro_Time =  getCumulativeSumList(list_Baro_TimeBeforePrev);
         list_Gyro_Time =  getCumulativeSumList(list_Gyro_TimeBeforePrev);
+
+        // Smoothen data
+
+        list_Accel_X =          smoothenData(list_Accel_X, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Accel_Y =          smoothenData(list_Accel_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Accel_Z =          smoothenData(list_Accel_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Baro_Millibar =    smoothenData(list_Baro_Millibar, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Baro_Height =      smoothenData(list_Baro_Height, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Gyro_X =           smoothenData(list_Gyro_X, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Gyro_Y =           smoothenData(list_Gyro_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Gyro_Z =           smoothenData(list_Gyro_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
+
 
         // fun little snippet that prevents users from taking screenshots
         // on ICS+ devices :-)
@@ -266,11 +283,11 @@ public class SimpleXYPlotActivity extends Activity
      * @return an array list of array list of strings representation of the CSV file
      */
     private ArrayList<ArrayList<String> > tokenizeCSVBufReader(BufferedReader br) {
-        ArrayList<ArrayList<String> > ret = new ArrayList<ArrayList<String> >();
+        ArrayList<ArrayList<String> > ret = new ArrayList<>();
         try {
             String line;
             while ((line = br.readLine()) != null) {
-                ArrayList<String> row = new ArrayList<String>();
+                ArrayList<String> row = new ArrayList<>();
                 ret.add(row);
                 StringTokenizer tokenizer = new StringTokenizer(line, ",");
                 while (tokenizer.hasMoreTokens()) {
@@ -291,7 +308,7 @@ public class SimpleXYPlotActivity extends Activity
      * @return an ArrayList<Double> representation of the column, assuming that the data can be converted to doubles
      */
     private ArrayList<Double> makeArrayListFromCSVTokens(ArrayList<ArrayList<String> > csvTokens, int colIndex) {
-        ArrayList<Double> ret = new ArrayList<Double>();
+        ArrayList<Double> ret = new ArrayList<>();
         for (int i = 0; i < csvTokens.size(); i++) {
             if (colIndex >= csvTokens.get(i).size()) {
                 // No such column for this row
@@ -311,11 +328,11 @@ public class SimpleXYPlotActivity extends Activity
 
     /**
      * Converts a list of doubles to a cumulative sum list.
-     * @param doubleList
+     * @param doubleList the ArrayList of doubles
      * @return an ArrayList<Double> containing the cumulative sum of the list given
      */
     private ArrayList<Double> getCumulativeSumList(ArrayList<Double> doubleList) {
-        ArrayList<Double> cumulativeSumList = new ArrayList<Double>();
+        ArrayList<Double> cumulativeSumList = new ArrayList<>();
         if (doubleList.isEmpty()) {
             return cumulativeSumList;
         }
@@ -325,5 +342,31 @@ public class SimpleXYPlotActivity extends Activity
             cumulativeSumList.add(doubleList.get(i) + cumulativeSumList.get(i-1));
         }
         return cumulativeSumList;
+    }
+
+    /**
+     * Smoothens data in the form of an array list of doubles.
+     * This is done by using a moving average over the specified number of data points.
+     * @param doubleList the data to be smoothened
+     * @param numPoints the number of points over which the moving average will be calculated
+     * @return
+     */
+    private ArrayList<Double> smoothenData(ArrayList<Double> doubleList, int numPoints) {
+        if (numPoints <= 1 || numPoints > MAX_MOVINGAVG_POINTS) {
+            numPoints = MAX_MOVINGAVG_POINTS;
+        }
+        ArrayList<Double> rangeSum = getCumulativeSumList(doubleList);
+        ArrayList<Double> ret = new ArrayList<Double>();
+        double val = 0.0;
+        for (int i = 0; i < doubleList.size(); i++) {
+            if (i >= numPoints) {
+                val = rangeSum.get(i) - rangeSum.get(i - numPoints);
+                ret.add(val/numPoints);
+            } else {
+                val = rangeSum.get(i);
+                ret.add(val/(i+1));
+            }
+        }
+        return ret;
     }
 }
