@@ -865,17 +865,20 @@ public class MainActivity extends Activity
         if (!logDirectory.isDirectory())
             throw new IOException("Unable to create log directory");
 
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        //System.out.println(timeStamp);
+
         // Third, create output streams for the log files (APPEND MODE)
         // Barometer log
-        File logFile = new File(logDirectory, "Barometer.csv");
+        File logFile = new File(logDirectory, timeStamp+"Barometer.csv");
         FileOutputStream fout = new FileOutputStream(logFile, true);
         barometerLogFileOut = new PrintWriter(fout);
 
-        logFile = new File(logDirectory, "Accelerometer.csv");
+        logFile = new File(logDirectory, timeStamp+"Accelerometer.csv");
         fout = new FileOutputStream(logFile, true);
         accelerometerLogFileOut = new PrintWriter(fout);
 
-        logFile = new File(logDirectory, "Gyroscope.csv");
+        logFile = new File(logDirectory, timeStamp+"Gyroscope.csv");
         fout = new FileOutputStream(logFile, true);
         gyroscopeLogFileOut = new PrintWriter(fout);
         // Location log
