@@ -144,7 +144,7 @@ public class MainActivity extends Activity
             // Tell the user
             createToast("Unable to stop barometer: " + e.toString());
         } finally {
-            sensorManager = null;
+            //sensorManager = null;
             barometerSensor = null;
         }
     }
@@ -187,7 +187,7 @@ public class MainActivity extends Activity
             Log.e(TAG, "Unable to stop gyroscope", e);
             createToast("Unable to stop gyroscope: " + e.toString());
         } finally {
-            sensorManager = null;
+           // sensorManager = null;
             gyroscopeSensor = null;
         }
     }
@@ -224,12 +224,12 @@ public class MainActivity extends Activity
                 return;
             isAccelerometerOn = false;
             sensorManager.unregisterListener(this,
-                    gyroscopeSensor);
+                    accelerometerSensor);
         } catch (Exception e) {
             Log.e(TAG, "Unable to stop accelerometer", e);
             createToast("Unable to stop accelerometer: " + e.toString());
         } finally {
-            sensorManager = null;
+          //  sensorManager = null;
             accelerometerSensor = null;
         }
     }
@@ -502,20 +502,62 @@ public class MainActivity extends Activity
                 (TextView) findViewById(R.id.TextView_Gyroscope);
         accelerometerTextView =
                 (TextView) findViewById(R.id.TextView_Accelerometer);
+        startAll = (Button) findViewById(R.id.startAll);
+        stopAll = (Button) findViewById(R.id.stopAll);
 
         // Disable the stop buttons
         stopBarometerButton.setEnabled(false);
         stopAccelerometerButton.setEnabled(false);
         stopGyroscopeButton.setEnabled(false);
+        stopAll.setEnabled(false);
 
         // Set up button listeners
         setUpButtonListeners();
     }
-
     /**
      * Helper method that sets up button listeners.
      */
     private void setUpButtonListeners() {
+
+        startAll.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Start barometer sampling
+                startBarometerSampling();
+                startAccelerometerSampling();
+                startGyroscopeSampling();
+                // Disable the start and enable stop button
+                startBarometerButton.setEnabled(false);
+                stopBarometerButton.setEnabled(true);
+                startAccelerometerButton.setEnabled(false);
+                stopAccelerometerButton.setEnabled(true);
+                startGyroscopeButton.setEnabled(false);
+                stopGyroscopeButton.setEnabled(true);
+                startAll.setEnabled(false);
+                stopAll.setEnabled(true);
+                // Inform the user
+                createToast("All started sampling");
+            }
+        });
+
+        stopAll.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Stop barometer sampling
+                stopBarometerSampling();
+                stopAccelerometerSampling();
+                stopGyroscopeSampling();
+                // Disable the stop and enable start button
+                startBarometerButton.setEnabled(true);
+                stopBarometerButton.setEnabled(false);
+                startAccelerometerButton.setEnabled(true);
+                stopAccelerometerButton.setEnabled(false);
+                startGyroscopeButton.setEnabled(true);
+                stopGyroscopeButton.setEnabled(false);
+                startAll.setEnabled(true);
+                stopAll.setEnabled(false);
+                // Inform the user
+                createToast("All sampling stopped");
+            }
+        });
 
         // Start barometer
         startBarometerButton.setOnClickListener(new View.OnClickListener() {
@@ -982,6 +1024,8 @@ public class MainActivity extends Activity
     private Button stopGyroscopeButton;
     private Button startAccelerometerButton;
     private Button stopAccelerometerButton;
+    private Button startAll;
+    private Button stopAll;
 
     private Button flushLocationButton;
     private TextView barometerTextView;
