@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.androidplot.xy.SimpleXYSeries;
@@ -13,12 +15,19 @@ import com.androidplot.xy.*;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 // jeremy added theses
@@ -85,6 +94,9 @@ public class SimpleXYPlotActivity extends Activity
     private DtnMiddlewareInterface middleware;
     private Handler handler;
     private Descriptor descriptor;
+    private Spinner spinnerBarometer;
+    private Spinner spinnerAccelerometer;
+    private Spinner spinnerGyroscope;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -234,7 +246,10 @@ public class SimpleXYPlotActivity extends Activity
         } catch (Exception e) {
             createToast("error on create");
         }
-
+        spinnerBarometer = (Spinner) findViewById(R.id.spinnerBarometer);
+        spinnerAccelerometer = (Spinner) findViewById(R.id.spinnerAccelerometer);
+        spinnerGyroscope = (Spinner) findViewById(R.id.spinnerGyroscope);
+        addItemsOnSpinner();
     }
 
     private class ChatMessageListener
@@ -259,6 +274,51 @@ public class SimpleXYPlotActivity extends Activity
                 File selectedAccelerometerFileCSV = message.getFile(1);
                 File selectedGyroscopeFileCSV = message.getFile(2);
 
+                FileChannel inputChannel1 = null, inputChannel2 = null, inputChannel3 = null;
+                FileChannel outputChannel1 = null, outputChannel2 = null, outputChannel3 = null;
+                FileChannel fc1 = null, fc2 = null, fc3 = null, fc4 = null, fc5 = null, fc6 = null;
+
+                try {
+                    // First, check if the sdcard is available for writing
+                    String externalStorageState = Environment.getExternalStorageState();
+                    if (!externalStorageState.equals(Environment.MEDIA_MOUNTED) &&
+                            !externalStorageState.equals(Environment.MEDIA_SHARED))
+                        throw new IOException("sdcard is not mounted on the filesystem");
+
+                    // Second, create the log directory
+                    File logDirectory = new File(Environment.getExternalStorageDirectory(),
+                            "CS4222DataCollector");
+                    logDirectory.mkdirs();
+                    if (!logDirectory.isDirectory())
+                        throw new IOException("Unable to create log directory");
+
+
+                    File logFileBarometer = new File(logDirectory, selectedBarometerFile);
+                    File logFileAccelerometer = new File(logDirectory, selectedAccelerometerFile);
+                    File logFileGyroscope = new File(logDirectory, selectedGyroscopeFile);
+
+
+                    fc1 = new FileInputStream(selectedBarometerFileCSV).getChannel();
+                    fc2 = new FileOutputStream(logFileBarometer).getChannel();
+                    fc2.transferFrom(fc1, 0, fc1.size());
+
+                    fc3 = new FileInputStream(selectedAccelerometerFileCSV).getChannel();
+                    fc4 = new FileOutputStream(logFileAccelerometer).getChannel();
+                    fc4.transferFrom(fc3, 0, fc3.size());
+
+                    fc5 = new FileInputStream(selectedGyroscopeFileCSV).getChannel();
+                    fc6 = new FileOutputStream(logFileGyroscope).getChannel();
+                    fc6.transferFrom(fc5, 0, fc5.size());
+
+                }finally{
+                    fc1.close();
+                    fc2.close();
+                    fc3.close();
+                    fc4.close();
+                    fc5.close();
+                    fc6.close();
+                }
+
                 // Append to the message list
                 final String newText =
                         testText.getText() +
@@ -266,6 +326,8 @@ public class SimpleXYPlotActivity extends Activity
 
                 // Update the text view in Main UI thread
                 createToast(newText);
+
+
                 /*
                 handler.post(new Runnable() {
                     public void run() {
@@ -279,6 +341,50 @@ public class SimpleXYPlotActivity extends Activity
                 // Tell the user
                 createToast("Exception on message event, check log");
             }
+        }
+    }
+
+    private void addItemsOnSpinner() {
+        File storageDir[] = new File(Environment
+                .getExternalStorageDirectory().getPath()
+                + "/CS4222DataCollector/").listFiles();
+
+        String result="";
+        List<String> listBarometer = new ArrayList<String>();
+        List<String> listAccelerometer = new ArrayList<String>();
+        List<String> listGyroscope = new ArrayList<String>();
+
+        if ( storageDir != null ) {
+            for ( File file : storageDir ) {
+                if ( file != null ) {
+                    String tempDirectory = file.getAbsolutePath().substring(file.getAbsolutePath().indexOf("CS4222DataCollector")+20);
+                    if(file.getAbsolutePath().contains("Barometer")){
+                        listBarometer.add(tempDirectory);
+                    }else if(file.getAbsolutePath().contains("Accelerometer")){
+                        listAccelerometer.add(tempDirectory);
+                    }else if(file.getAbsolutePath().contains("Gyroscope")){
+                        listGyroscope.add(tempDirectory);
+                    }
+                    result = result + file.getAbsolutePath() + "\n";
+                }
+            }
+            ArrayAdapter<String> dataAdapterBarometer = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, listBarometer);
+            dataAdapterBarometer.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerBarometer.setAdapter(dataAdapterBarometer);
+
+            ArrayAdapter<String> dataAdapterAccelerometer = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, listAccelerometer);
+            dataAdapterAccelerometer.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerAccelerometer.setAdapter(dataAdapterAccelerometer);
+
+            ArrayAdapter<String> dataAdapterGyroscope = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, listGyroscope);
+            dataAdapterGyroscope.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerGyroscope.setAdapter(dataAdapterGyroscope);
+
+
+            //testText.setText(result);
         }
     }
 

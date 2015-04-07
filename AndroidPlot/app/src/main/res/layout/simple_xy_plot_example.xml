@@ -36,18 +36,41 @@
             androidPlot.graphWidget.gridLinePaint.color="#000000"/>
     </LinearLayout>
 
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerAccelerometer"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center_horizontal" />
+
     <Button
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_weight="1"
         android:text="@string/accelerometer_data"
         android:onClick="plotAccelerometerData" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerBarometer"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center_horizontal" />
+
     <Button
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_weight="1"
         android:text="@string/barometer_data"
         android:onClick="plotBarometerData" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerGyroscope"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center_horizontal" />
+
     <Button
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
