@@ -1,13 +1,18 @@
 package com.example.yude.androidplot;
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
+
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -15,6 +20,18 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
+
+// jeremy added theses
+import nus.context.fumapp.api.*;
+import nus.dtn.middleware.api.DtnMiddlewareInterface;
+import nus.dtn.middleware.api.DtnMiddlewareProxy;
+import nus.dtn.middleware.api.MiddlewareEvent;
+import nus.dtn.middleware.api.MiddlewareListener;
+import nus.dtn.util.*;
+import nus.dtn.api.fwdlayer.*;
+import android.telephony.TelephonyManager;
+import android.os.Handler;
+import android.widget.Toast;
 
 /**
  * A straightforward example of using AndroidPlot to plot some data.
@@ -62,10 +79,17 @@ public class SimpleXYPlotActivity extends Activity
     private ArrayList<Double> list_Gyro_Y;
     private ArrayList<Double> list_Gyro_Z;
 
+    // jeremy added theses
+    private TextView testText;
+    private ForwardingLayerInterface fwdLayer1;
+    private DtnMiddlewareInterface middleware;
+    private Handler handler;
+    private Descriptor descriptor;
+
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         // Create buffered readers to read the data files
         BufferedReader bufReader_Accel;
@@ -73,59 +97,59 @@ public class SimpleXYPlotActivity extends Activity
         BufferedReader bufReader_Gyro;
 
         // For tokenization later
-        ArrayList<ArrayList<String> > tokens_Accel = new ArrayList<>();
-        ArrayList<ArrayList<String> > tokens_Baro = new ArrayList<>();
-        ArrayList<ArrayList<String> > tokens_Gyro = new ArrayList<>();
+        ArrayList<ArrayList<String>> tokens_Accel = new ArrayList<>();
+        ArrayList<ArrayList<String>> tokens_Baro = new ArrayList<>();
+        ArrayList<ArrayList<String>> tokens_Gyro = new ArrayList<>();
         try {
             bufReader_Accel = getBufReaderFromAssets(FILENAME_ACCEL_DATA);
             bufReader_Baro = getBufReaderFromAssets(FILENAME_BARO_DATA);
             bufReader_Gyro = getBufReaderFromAssets(FILENAME_GYRO_DATA);
 
             // Tokenize the data
-            tokens_Accel =   tokenizeCSVBufReader(bufReader_Accel);
-            tokens_Baro =    tokenizeCSVBufReader(bufReader_Baro);
-            tokens_Gyro =    tokenizeCSVBufReader(bufReader_Gyro);
+            tokens_Accel = tokenizeCSVBufReader(bufReader_Accel);
+            tokens_Baro = tokenizeCSVBufReader(bufReader_Baro);
+            tokens_Gyro = tokenizeCSVBufReader(bufReader_Gyro);
         } catch (IOException ex) {
             Log.e("GETTING BUFFERED READER", "IOException encountered... finish() activity");
             finish(); // Don't continue execution if we could not read the files
         }
 
         // Make the ArrayLists representing the series
-        ArrayList<Double> list_Accel_TimeBeforePrev =   makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_TIMEBEFOREPREV);
-        list_Accel_X =                                  makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_X);
-        list_Accel_Y =                                  makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_Y);
-        list_Accel_Z =                                  makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_Z);
+        ArrayList<Double> list_Accel_TimeBeforePrev = makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_TIMEBEFOREPREV);
+        list_Accel_X = makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_X);
+        list_Accel_Y = makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_Y);
+        list_Accel_Z = makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_Z);
 
-        ArrayList<Double> list_Baro_TimeBeforePrev =    makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_TIMEBEFOREPREV);
-        list_Baro_Millibar =                            makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_MILLIBAR);
-        list_Baro_Height =                              makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_HEIGHT);
+        ArrayList<Double> list_Baro_TimeBeforePrev = makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_TIMEBEFOREPREV);
+        list_Baro_Millibar = makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_MILLIBAR);
+        list_Baro_Height = makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_HEIGHT);
 
-        ArrayList<Double> list_Gyro_TimeBeforePrev =    makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_TIMEBEFOREPREV);
-        list_Gyro_X =                                   makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_X);
-        list_Gyro_Y =                                   makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_Y);
-        list_Gyro_Z =                                   makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_Z);
+        ArrayList<Double> list_Gyro_TimeBeforePrev = makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_TIMEBEFOREPREV);
+        list_Gyro_X = makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_X);
+        list_Gyro_Y = makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_Y);
+        list_Gyro_Z = makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_Z);
 
         // Convert the TimeBeforePrev array lists to time so that they can be used as the domain of the series
         list_Accel_Time = getCumulativeSumList(list_Accel_TimeBeforePrev);
-        list_Baro_Time =  getCumulativeSumList(list_Baro_TimeBeforePrev);
-        list_Gyro_Time =  getCumulativeSumList(list_Gyro_TimeBeforePrev);
+        list_Baro_Time = getCumulativeSumList(list_Baro_TimeBeforePrev);
+        list_Gyro_Time = getCumulativeSumList(list_Gyro_TimeBeforePrev);
 
         // Smoothen data
 
-        list_Accel_X =          smoothenData(list_Accel_X, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Accel_Y =          smoothenData(list_Accel_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Accel_Z =          smoothenData(list_Accel_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Baro_Millibar =    smoothenData(list_Baro_Millibar, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Baro_Height =      smoothenData(list_Baro_Height, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Gyro_X =           smoothenData(list_Gyro_X, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Gyro_Y =           smoothenData(list_Gyro_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Gyro_Z =           smoothenData(list_Gyro_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Accel_X = smoothenData(list_Accel_X, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Accel_Y = smoothenData(list_Accel_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Accel_Z = smoothenData(list_Accel_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Baro_Millibar = smoothenData(list_Baro_Millibar, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Baro_Height = smoothenData(list_Baro_Height, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Gyro_X = smoothenData(list_Gyro_X, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Gyro_Y = smoothenData(list_Gyro_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
+        list_Gyro_Z = smoothenData(list_Gyro_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
 
 
         // fun little snippet that prevents users from taking screenshots
         // on ICS+ devices :-)
-       // getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
-       //         WindowManager.LayoutParams.FLAG_SECURE);
+        // getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
+        //         WindowManager.LayoutParams.FLAG_SECURE);
 
         setContentView(R.layout.simple_xy_plot_example);
 
@@ -166,7 +190,169 @@ public class SimpleXYPlotActivity extends Activity
         plot.setTicksPerRangeLabel(3);
         plot.getGraphWidget().setDomainLabelOrientation(-45);
 
+
+        // jeremy added theses
+        testText = (TextView) findViewById(R.id.TextView_Test);
+        testText.setText("Testing 123");
+
+        try {
+            handler = new Handler();
+            // Start the middleware
+            middleware = new DtnMiddlewareProxy(getApplicationContext());
+            middleware.start(new MiddlewareListener() {
+                public void onMiddlewareEvent(MiddlewareEvent event) {
+                    try {
+
+                        // Check if the middleware failed to start
+                        if (event.getEventType() != MiddlewareEvent.MIDDLEWARE_STARTED) {
+                            throw new Exception("Middleware failed to start, is it installed?");
+                        }
+
+                        // Get the fwd layer API
+                        fwdLayer1 = new ForwardingLayerProxy(middleware);
+                        // Get a descriptor for this user
+                        // Typically, the user enters the username, but here we simply use IMEI number
+                        TelephonyManager telephonyManager =
+                                (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+                        descriptor = fwdLayer1.getDescriptor("nus.cs4222.jeremy", telephonyManager.getDeviceId());
+
+                        // Set the broadcast address
+                        fwdLayer1.setBroadcastAddress ( "nus.cs4222.jeremy" , "graphapp" );
+
+                        // Register a listener for received chat messages
+                        ChatMessageListener messageListener = new ChatMessageListener();
+                        fwdLayer1.addMessageListener(descriptor, messageListener);
+                        createToast("Listening...");
+                    } catch (Exception e) {
+                        // Log the exception
+                        Log.e("BroadcastApp", "Exception in middleware start listener", e);
+                        // Inform the user
+                        createToast("Exception in middleware start listener, check log");
+                    }
+                }
+            });
+        } catch (Exception e) {
+            createToast("error on create");
+        }
+
     }
+
+    private class ChatMessageListener
+            implements MessageListener {
+
+        /**
+         * {@inheritDoc}
+         */
+        public void onMessageReceived(String source,
+                                      String destination,
+                                      DtnMessage message) {
+            try {
+
+                // Read the DTN message
+                // Data part
+                message.switchToData();
+
+                String selectedBarometerFile = message.readString();
+                String selectedAccelerometerFile = message.readString();
+                String selectedGyroscopeFile = message.readString();
+                File selectedBarometerFileCSV = message.getFile(0);
+                File selectedAccelerometerFileCSV = message.getFile(1);
+                File selectedGyroscopeFileCSV = message.getFile(2);
+
+                // Append to the message list
+                final String newText =
+                        testText.getText() +
+                                "\n" + source + " says: " + selectedBarometerFile + "\n " + selectedAccelerometerFile +"\n"+selectedGyroscopeFile+"\n";
+
+                // Update the text view in Main UI thread
+                createToast(newText);
+                /*
+                handler.post(new Runnable() {
+                    public void run() {
+                        testText.setText(newText);
+                    }
+                });
+                */
+            } catch (Exception e) {
+                // Log the exception
+                Log.e("BroadcastApp", "Exception on message event", e);
+                // Tell the user
+                createToast("Exception on message event, check log");
+            }
+        }
+    }
+
+    private void createToast(String toastMessage) {
+
+        // Use a 'final' local variable, otherwise the compiler will complain
+        final String toastMessageFinal = toastMessage;
+
+        // Post a runnable in the Main UI thread
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(),
+                        toastMessageFinal,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    public void pushData(View view) {
+
+                Thread clickThread = new Thread() {
+                    public void run() {
+
+                        try {
+
+                            String selectedBarometerFile = "dummy";
+                            String selectedAccelerometerFile = "dummy";
+                            String selectedGyroscopeFile = "dummy";
+/*
+                            File storageDir[] = new File(Environment
+                                    .getExternalStorageDirectory().getPath()
+                                    + "/CS4222DataCollector/").listFiles();
+*/
+                            File selectedBarometerFileCSV = null;
+                            File selectedAccelerometerFileCSV = null;
+                            File selectedGyroscopeFileCSV = null;
+/*
+                            if ( storageDir != null ) {
+                                for (File file : storageDir) {
+                                    if (file != null) {
+                                        if (file.getAbsolutePath().contains(selectedBarometerFile)) {
+                                            selectedBarometerFileCSV = file;
+                                        } else if (file.getAbsolutePath().contains(selectedAccelerometerFile)) {
+                                            selectedAccelerometerFileCSV = file;
+                                        } else if (file.getAbsolutePath().contains(selectedGyroscopeFile)) {
+                                            selectedGyroscopeFileCSV = file;
+                                        }
+                                    }
+                                }
+                            }
+                            */
+                            //send message
+                            DtnMessage message = new DtnMessage();
+
+                            // Data part
+                            message.addData().writeLong(1).writeString("hello");
+
+                            // Broadcast the message using the fwd layer interface
+                           fwdLayer1.sendMessage(descriptor, message, "everyone", null);
+
+                            // Tell the user that the message has been sent
+                            createToast("Chat message broadcast! "+selectedBarometerFile + ", " + selectedAccelerometerFile + ", " + selectedGyroscopeFile);
+                        } catch (Exception e) {
+                            // Log the exception
+                            //Log.e("BroadcastApp", "Exception while sending message", e);
+                            // Inform the user
+                            createToast("Exception while sending message, check log");
+                        }
+                    }
+                };
+                clickThread.start();
+            }
+
+
 
     public void plotAccelerometerData(View view) {
         Log.v("plotAccelerometerData", "Plotting accelerometer data...");
@@ -319,7 +505,7 @@ public class SimpleXYPlotActivity extends Activity
                 Double doubleVal = Double.valueOf(strVal);
                 ret.add(doubleVal);
             } catch (NumberFormatException ex) {
-                Log.e("makeArrayListFromCSVTokens()", "Could not convert \"" + strVal + "\" to double, finish() activity");
+                //Log.e("makeArrayListFromCSVTokens()", "Could not convert \"" + strVal + "\" to double, finish() activity");
                 finish();
             }
         }

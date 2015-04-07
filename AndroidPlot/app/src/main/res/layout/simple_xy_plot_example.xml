@@ -54,4 +54,18 @@
         android:layout_weight="1"
         android:text="@string/gyroscope_data"
         android:onClick="plotGyroscopeData" />
+
+    <TextView
+        android:id="@+id/TextView_Test"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="" />
+
+    <Button
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/push_data"
+        android:onClick="pushData" />
+
 </LinearLayout>

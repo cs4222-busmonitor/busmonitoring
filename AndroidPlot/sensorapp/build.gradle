@@ -1,0 +1,34 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion "21.1.2"
+
+    defaultConfig {
+        applicationId "com.example.jeremy.sensorapp"
+        minSdkVersion 16
+        targetSdkVersion 21
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:22.0.0'
+    compile files('libs/AdhocTcpLinkLayer.jar')
+    compile files('libs/DtnMiddlewareApi.jar')
+    compile files('libs/DtnMiddlewareUtil.jar')
+    compile files('libs/EpidemicRouting.jar')
+    compile files('libs/ForwardingLayerApi.jar')
+    compile files('libs/FumAppApi.jar')
+    compile files('libs/LinkLayerApi.jar')
+    compile files('libs/osgi-config-1.5.jar')
+    compile files('libs/osgi.core.jar')
+}

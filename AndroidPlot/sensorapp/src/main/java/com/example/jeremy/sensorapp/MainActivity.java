@@ -13,19 +13,30 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Spinner;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+
+import nus.dtn.middleware.api.DtnMiddlewareInterface;
+import nus.dtn.middleware.api.DtnMiddlewareProxy;
+import nus.dtn.middleware.api.MiddlewareEvent;
+import nus.dtn.middleware.api.MiddlewareListener;
+import nus.dtn.util.*;
+import nus.dtn.api.fwdlayer.*;
+import android.telephony.TelephonyManager;
 
 public class MainActivity extends Activity
         implements SensorEventListener {
@@ -38,20 +49,101 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
 
         // Create a handler to the main thread
-        handler = new Handler();
+
 
         try {
-
+            handler = new Handler();
             // Set up the GUI
             setUpGUI();
 
             // Open the log files
             openLogFiles();
+
+            // Start the middleware
+            middleware = new DtnMiddlewareProxy ( getApplicationContext() );
+            middleware.start ( new MiddlewareListener() {
+                public void onMiddlewareEvent ( MiddlewareEvent event ) {
+                    try {
+
+                        // Check if the middleware failed to start
+                        if ( event.getEventType() != MiddlewareEvent.MIDDLEWARE_STARTED ) {
+                            throw new Exception( "Middleware failed to start, is it installed?" );
+                        }
+
+                        // Get the fwd layer API
+                        fwdLayer1 = new ForwardingLayerProxy ( middleware );
+                        // Get a descriptor for this user
+                        // Typically, the user enters the username, but here we simply use IMEI number
+
+                        TelephonyManager telephonyManager =
+                                (TelephonyManager) getSystemService ( Context.TELEPHONY_SERVICE );
+
+                        descriptor = fwdLayer1.getDescriptor ( "nus.cs4222.jeremy" , telephonyManager.getDeviceId() );
+
+                        // Set the broadcast address
+                        //fwdLayer1.setBroadcastAddress ( "nus.cs4222.jeremy" , "everyone" );
+
+                        // Register a listener for received chat messages
+                        ChatMessageListener messageListener = new ChatMessageListener();
+                        fwdLayer1.addMessageListener ( descriptor , messageListener );
+                        createToast ( "Listening..." );
+
+                    }
+                    catch ( Exception e ) {
+                        // Log the exception
+                        Log.e ( "BroadcastApp" , "Exception in middleware start listener" , e );
+                        // Inform the user
+                        createToast ( "Exception in middleware start listener, check log" );
+                    }
+                }
+            } );
+
+
         } catch (Exception e) {
             // Log the exception
             Log.e(TAG, "Unable to create activity", e);
             // Tell the user
             createToast("Unable to create CS4222 Activity: " + e.toString());
+        }
+    }
+
+    private class ChatMessageListener
+            implements MessageListener {
+
+        /**
+         * {@inheritDoc}
+         */
+        public void onMessageReceived(String source,
+                                      String destination,
+                                      DtnMessage message) {
+
+            try {
+
+                // Read the DTN message
+                // Data part
+                message.switchToData();
+                long timeStamp = message.readLong();
+                String quoteMessage = message.readString();
+
+                // Append to the message list
+
+                final String newText =
+                        testText.getText() +
+                                "\n" + source + " says: " + quoteMessage;
+
+                // Update the text view in Main UI thread
+                createToast(newText);
+                handler.post(new Runnable() {
+                    public void run() {
+                        testText.setText(newText);
+                    }
+                });
+            } catch (Exception e) {
+                // Log the exception
+                Log.e("BroadcastApp", "Exception on message event", e);
+                // Tell the user
+                createToast("Exception on message event, check log");
+            }
         }
     }
 
@@ -187,7 +279,7 @@ public class MainActivity extends Activity
             Log.e(TAG, "Unable to stop gyroscope", e);
             createToast("Unable to stop gyroscope: " + e.toString());
         } finally {
-           // sensorManager = null;
+            // sensorManager = null;
             gyroscopeSensor = null;
         }
     }
@@ -229,82 +321,11 @@ public class MainActivity extends Activity
             Log.e(TAG, "Unable to stop accelerometer", e);
             createToast("Unable to stop accelerometer: " + e.toString());
         } finally {
-          //  sensorManager = null;
+            //  sensorManager = null;
             accelerometerSensor = null;
         }
     }
 
-
-
-
-    /*
-        private void startLocationSampling() {
-
-            try {
-
-                // Check the flag
-                if ( isLocationOn )
-                    return;
-
-                // Get the location manager
-                locationManager =
-                        (LocationManager) getSystemService( Context.LOCATION_SERVICE );
-                // Get one of the enabled location providers (ignore passive provider)
-                List<String> enabledProviders = locationManager.getProviders( true );
-                enabledProviders.remove( LocationManager.PASSIVE_PROVIDER );
-                if ( enabledProviders.isEmpty() ) {
-                    throw new Exception( "No location provider enabled" );
-                }
-
-                // Initialise timestamps and count
-                prevLocationTime = System.currentTimeMillis();
-                locationDelayTime = 0;
-                numLocationReadings = 0;
-
-                // Add a location change listener for any one of the enabled providers
-                // The provider used (GPS or network) depends on user's Location Settings
-                locationManager.requestLocationUpdates( enabledProviders.get( 0 ) ,
-                        0 ,       // Min time: 0 (fastest)
-                        0.0F ,    // Min distance change: 0 meters
-                        this );   // Location Listener to be called
-
-                // Set the flag
-                isLocationOn = true;
-            }
-            catch ( Exception e ) {
-                // Log the exception
-                Log.e ( TAG , "Unable to start location" , e );
-                // Tell the user
-                createToast ( "Unable to start location: " + e.toString() );
-            }
-        }
-    */
-    /*
-    private void stopLocationSampling() {
-
-        try {
-
-            // Check the flag
-            if ( ! isLocationOn )
-                return;
-
-            // Set the flag
-            isLocationOn = false;
-
-            // Remove the location change listener
-            locationManager.removeUpdates( this );
-        }
-        catch ( Exception e ) {
-            // Log the exception
-            Log.e ( TAG , "Unable to stop location" , e );
-            // Tell the user
-            createToast ( "Unable to stop location: " + e.toString() );
-        }
-        finally {
-            locationManager = null;
-        }
-    }
-*/
     @Override
     public void onSensorChanged(SensorEvent event) {
 
@@ -423,55 +444,6 @@ public class MainActivity extends Activity
                                   int accuracy) {
         // Nothing to do here
     }
-/*
-    @Override
-    public void onLocationChanged( Location location ) {
-
-        // Calculate the delay for first reading
-        long locationTime = location.getTime();
-        if ( locationDelayTime == 0 ) {
-            locationDelayTime = locationTime - prevLocationTime;
-        }
-
-        // Update the count
-        ++numLocationReadings;
-
-        // Get the location details
-        String provider = location.getProvider();
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-        float accuracy = location.getAccuracy();
-        double altitude = ( location.hasAltitude() ?
-                location.getAltitude() : -1.0 );
-        float bearing = ( location.hasBearing() ?
-                location.getBearing() : -1.0F );
-        float speed = ( location.hasSpeed() ?
-                location.getSpeed() : -1.0F );
-
-        // Log the reading
-        logLocationReading( locationTime ,
-                provider ,
-                latitude ,
-                longitude ,
-                accuracy ,
-                altitude ,
-                bearing ,
-                speed );
-
-        // Update the GUI
-        updateLocationTextView( locationTime ,
-                provider ,
-                latitude ,
-                longitude ,
-                accuracy ,
-                altitude ,
-                bearing ,
-                speed );
-
-        // Update the last timestamp
-        prevLocationTime = locationTime;
-    }
-*/
 
     /**
      * Helper method that sets up the GUI.
@@ -511,17 +483,128 @@ public class MainActivity extends Activity
         stopGyroscopeButton.setEnabled(false);
         stopAll.setEnabled(false);
 
+        spinnerBarometer = (Spinner) findViewById(R.id.spinnerBarometer);
+        spinnerAccelerometer = (Spinner) findViewById(R.id.spinnerAccelerometer);
+        spinnerGyroscope = (Spinner) findViewById(R.id.spinnerGyroscope);
+
+        testText = (TextView) findViewById(R.id.TextView_Test);
+
+        sendCSVFiles = (Button) findViewById(R.id.sendCSVFiles);
+
+        addItemsOnSpinner();
         // Set up button listeners
         setUpButtonListeners();
     }
     /**
      * Helper method that sets up button listeners.
      */
+    private void addItemsOnSpinner() {
+        File storageDir[] = new File(Environment
+                .getExternalStorageDirectory().getPath()
+                + "/CS4222DataCollector/").listFiles();
+
+        String result="";
+        List<String> listBarometer = new ArrayList<String>();
+        List<String> listAccelerometer = new ArrayList<String>();
+        List<String> listGyroscope = new ArrayList<String>();
+
+        if ( storageDir != null ) {
+            for ( File file : storageDir ) {
+                if ( file != null ) {
+                    String tempDirectory = file.getAbsolutePath().substring(file.getAbsolutePath().indexOf("CS4222DataCollector")+20);
+                    if(file.getAbsolutePath().contains("Barometer")){
+                        listBarometer.add(tempDirectory);
+                    }else if(file.getAbsolutePath().contains("Accelerometer")){
+                        listAccelerometer.add(tempDirectory);
+                    }else if(file.getAbsolutePath().contains("Gyroscope")){
+                        listGyroscope.add(tempDirectory);
+                    }
+                    result = result + file.getAbsolutePath() + "\n";
+                }
+            }
+            ArrayAdapter<String> dataAdapterBarometer = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, listBarometer);
+            dataAdapterBarometer.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerBarometer.setAdapter(dataAdapterBarometer);
+
+            ArrayAdapter<String> dataAdapterAccelerometer = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, listAccelerometer);
+            dataAdapterAccelerometer.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerAccelerometer.setAdapter(dataAdapterAccelerometer);
+
+            ArrayAdapter<String> dataAdapterGyroscope = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, listGyroscope);
+            dataAdapterGyroscope.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerGyroscope.setAdapter(dataAdapterGyroscope);
+
+
+            //testText.setText(result);
+        }
+    }
+
     private void setUpButtonListeners() {
+
+        sendCSVFiles.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Thread clickThread = new Thread() {
+                    public void run() {
+
+                        try {
+
+                            String selectedBarometerFile = String.valueOf(spinnerBarometer.getSelectedItem());
+                            String selectedAccelerometerFile = String.valueOf(spinnerAccelerometer.getSelectedItem());
+                            String selectedGyroscopeFile = String.valueOf(spinnerGyroscope.getSelectedItem());
+
+                            File storageDir[] = new File(Environment
+                                    .getExternalStorageDirectory().getPath()
+                                    + "/CS4222DataCollector/").listFiles();
+
+                            File selectedBarometerFileCSV = null;
+                            File selectedAccelerometerFileCSV = null;
+                            File selectedGyroscopeFileCSV = null;
+
+                            if ( storageDir != null ) {
+                                for (File file : storageDir) {
+                                    if (file != null) {
+                                        if (file.getAbsolutePath().contains(selectedBarometerFile)) {
+                                            selectedBarometerFileCSV = file;
+                                        } else if (file.getAbsolutePath().contains(selectedAccelerometerFile)) {
+                                            selectedAccelerometerFileCSV = file;
+                                        } else if (file.getAbsolutePath().contains(selectedGyroscopeFile)) {
+                                            selectedGyroscopeFileCSV = file;
+                                        }
+                                    }
+                                }
+                            }
+                            //send message
+                            DtnMessage message = new DtnMessage();
+
+                            // Data part
+                            message.addData().writeString(selectedBarometerFile).writeString(selectedAccelerometerFile).writeString(selectedGyroscopeFile).addFile(selectedBarometerFileCSV).addFile(selectedAccelerometerFileCSV).addFile(selectedGyroscopeFileCSV);
+                          //  message.addData().writeLong(1).writeInt(1).writeInt(1);  // Chat message
+
+
+                            // Broadcast the message using the fwd layer interface
+                            fwdLayer1.sendMessage(descriptor, message, "graphapp", null);
+
+                            // Tell the user that the message has been sent
+                            createToast("Chat message broadcast! "+selectedBarometerFile + ", " + selectedAccelerometerFile + ", " + selectedGyroscopeFile);
+                        } catch (Exception e) {
+                            // Log the exception
+                            //Log.e("BroadcastApp", "Exception while sending message", e);
+                            // Inform the user
+                            createToast("Exception while sending message, check log");
+                        }
+                    }
+                };
+                clickThread.start();
+            }
+        });
 
         startAll.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Start barometer sampling
+                addItemsOnSpinner();
                 startBarometerSampling();
                 startAccelerometerSampling();
                 startGyroscopeSampling();
@@ -563,6 +646,7 @@ public class MainActivity extends Activity
         startBarometerButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Start barometer sampling
+                addItemsOnSpinner();
                 startBarometerSampling();
                 // Disable the start and enable stop button
                 startBarometerButton.setEnabled(false);
@@ -589,6 +673,7 @@ public class MainActivity extends Activity
         startAccelerometerButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Start barometer sampling
+                addItemsOnSpinner();
                 startAccelerometerSampling();
                 // Disable the start and enable stop button
                 startAccelerometerButton.setEnabled(false);
@@ -615,6 +700,7 @@ public class MainActivity extends Activity
         startGyroscopeButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Start barometer sampling
+                addItemsOnSpinner();
                 startGyroscopeSampling();
                 // Disable the start and enable stop button
                 startGyroscopeButton.setEnabled(false);
@@ -836,44 +922,6 @@ public class MainActivity extends Activity
     }
 
 
-
-
-
-    /*
-    private void updateLocationTextView( long locationTime ,
-                                         String provider ,
-                                         double latitude ,
-                                         double longitude ,
-                                         float accuracy ,
-                                         double altitude ,
-                                         float bearing ,
-                                         float speed ) {
-
-        // Location details
-        final StringBuilder sb = new StringBuilder();
-        sb.append( "\nLocation--" );
-        sb.append( "\nNumber of readings: " + numLocationReadings );
-        sb.append( "\nProvider: " + provider );
-        sb.append( "\nLatitude (degrees): " + latitude );
-        sb.append( "\nLongitude (degrees): " + longitude );
-        sb.append( "\nAccuracy (m): " + accuracy );
-        sb.append( "\nAltitude (m): " + altitude );
-        sb.append( "\nBearing (degrees): " + bearing );
-        sb.append( "\nSpeed (m/sec): " + speed );
-        sb.append( "\nTime to get first sensor reading (msec): " + locationDelayTime );
-        sb.append( "\nTime from previous reading (msec): " +
-                ( locationTime - prevLocationTime ) );
-
-        // Update the text view in the main UI thread
-        handler.post ( new Runnable() {
-            @Override
-            public void run() {
-                locationTextView.setText( sb.toString() );
-            }
-        } );
-    }
-*/
-
     /**
      * Helper method to create toasts for the user.
      */
@@ -958,55 +1006,10 @@ public class MainActivity extends Activity
         } finally {
             gyroscopeLogFileOut = null;
         }
-/*
-        // Close the location log file
-        try {
-            locationLogFileOut.close();
-        }
-        catch ( Exception e ) {
-            Log.e( TAG , "Unable to close location log file" , e );
-        }
-        finally {
-            locationLogFileOut = null;
-        }
-        */
+
     }
 
-    /**
-     * Helper method that logs the barometer reading.
-     */
 
-
- /*
-    private void logLocationReading( long locationTime ,
-                                     String provider ,
-                                     double latitude ,
-                                     double longitude ,
-                                     float accuracy ,
-                                     double altitude ,
-                                     float bearing ,
-                                     float speed ) {
-
-        // Location details
-        final StringBuilder sb = new StringBuilder();
-        sb.append( numLocationReadings + "," );
-        sb.append( locationTime + "," );
-        sb.append( getHumanReadableTime( locationTime ) + "," );
-        sb.append( provider + "," );
-        sb.append( latitude + "," );
-        sb.append( longitude + "," );
-        sb.append( accuracy + "," );
-        sb.append( altitude + "," );
-        sb.append( bearing + "," );
-        sb.append( speed + "," );
-        sb.append( ( locationTime - prevLocationTime ) + "," );
-        sb.append( locationDelayTime );
-
-        // Log to the file (and flush)
-        locationLogFileOut.println( sb.toString() );
-        locationLogFileOut.flush();
-    }
-*/
 
     /**
      * Helper method to get the human readable time from unix time.
@@ -1026,6 +1029,14 @@ public class MainActivity extends Activity
     private Button stopAccelerometerButton;
     private Button startAll;
     private Button stopAll;
+
+    private Spinner spinnerBarometer;
+    private Spinner spinnerAccelerometer;
+    private Spinner spinnerGyroscope;
+
+    private TextView testText;
+
+    private Button sendCSVFiles;
 
     private Button flushLocationButton;
     private TextView barometerTextView;
@@ -1070,6 +1081,11 @@ public class MainActivity extends Activity
     private boolean isAccelerometerOn;
 
     private Handler handler;
+
+    private ForwardingLayerInterface fwdLayer1;
+    private DtnMiddlewareInterface middleware;
+
+    private Descriptor descriptor;
 
     public PrintWriter barometerLogFileOut;
     public PrintWriter gyroscopeLogFileOut;

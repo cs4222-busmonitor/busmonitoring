@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.yude.androidplot"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -20,7 +20,16 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:21.0.3'
-    compile "com.androidplot:androidplot-core:0.6.1"
+    compile 'com.androidplot:androidplot-core:0.6.1'
+    compile files('lib/AdhocTcpLinkLayer.jar')
+    compile files('lib/DtnMiddlewareApi.jar')
+    compile files('lib/DtnMiddlewareUtil.jar')
+    compile files('lib/EpidemicRouting.jar')
+    compile files('lib/ForwardingLayerApi.jar')
+    compile files('lib/FumAppApi.jar')
+    compile files('lib/LinkLayerApi.jar')
+    compile files('lib/osgi-config-1.5.jar')
+    compile files('lib/osgi.core.jar')
 }
