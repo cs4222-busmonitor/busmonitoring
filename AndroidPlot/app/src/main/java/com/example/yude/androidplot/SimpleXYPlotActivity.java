@@ -463,67 +463,6 @@ public class SimpleXYPlotActivity extends Activity
                 clickThread.start();
             }
 
-
-    /*
-    // Create buffered readers to read the data files
-        BufferedReader bufReader_Accel;
-        BufferedReader bufReader_Baro;
-        BufferedReader bufReader_Gyro;
-
-        // For tokenization later
-        ArrayList<ArrayList<String>> tokens_Accel = new ArrayList<>();
-        ArrayList<ArrayList<String>> tokens_Baro = new ArrayList<>();
-        ArrayList<ArrayList<String>> tokens_Gyro = new ArrayList<>();
-        try {
-            bufReader_Accel = getBufReaderFromAssets(FILENAME_ACCEL_DATA);
-            bufReader_Baro = getBufReaderFromAssets(FILENAME_BARO_DATA);
-            bufReader_Gyro = getBufReaderFromAssets(FILENAME_GYRO_DATA);
-
-            // Tokenize the data
-            tokens_Accel = tokenizeCSVBufReader(bufReader_Accel);
-            tokens_Baro = tokenizeCSVBufReader(bufReader_Baro);
-            tokens_Gyro = tokenizeCSVBufReader(bufReader_Gyro);
-        } catch (IOException ex) {
-            Log.e("GETTING BUFFERED READER", "IOException encountered... finish() activity");
-            finish(); // Don't continue execution if we could not read the files
-        }
-     // Make the ArrayLists representing the series
-        ArrayList<Double> list_Accel_TimeBeforePrev = makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_TIMEBEFOREPREV);
-        list_Accel_X = makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_X);
-        list_Accel_Y = makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_Y);
-        list_Accel_Z = makeArrayListFromCSVTokens(tokens_Accel, INDEX_ACCEL_DATA_Z);
-
-        ArrayList<Double> list_Baro_TimeBeforePrev = makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_TIMEBEFOREPREV);
-        list_Baro_Millibar = makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_MILLIBAR);
-        list_Baro_Height = makeArrayListFromCSVTokens(tokens_Baro, INDEX_BARO_DATA_HEIGHT);
-
-        ArrayList<Double> list_Gyro_TimeBeforePrev = makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_TIMEBEFOREPREV);
-        list_Gyro_X = makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_X);
-        list_Gyro_Y = makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_Y);
-        list_Gyro_Z = makeArrayListFromCSVTokens(tokens_Gyro, INDEX_GYRO_DATA_Z);
-
-        // Convert the TimeBeforePrev array lists to time so that they can be used as the domain of the series
-        list_Accel_Time = getCumulativeSumList(list_Accel_TimeBeforePrev);
-        list_Baro_Time = getCumulativeSumList(list_Baro_TimeBeforePrev);
-        list_Gyro_Time = getCumulativeSumList(list_Gyro_TimeBeforePrev);
-
-        // Smoothen data
-
-        list_Accel_X = smoothenData(list_Accel_X, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Accel_Y = smoothenData(list_Accel_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Accel_Z = smoothenData(list_Accel_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Baro_Millibar = smoothenData(list_Baro_Millibar, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Baro_Height = smoothenData(list_Baro_Height, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Gyro_X = smoothenData(list_Gyro_X, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Gyro_Y = smoothenData(list_Gyro_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
-        list_Gyro_Z = smoothenData(list_Gyro_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
-
-        // Get directory where csv data is stored by sensorapp
-        File storageDir[] = new File(Environment
-                .getExternalStorageDirectory().getPath()
-                + "/CS4222DataCollector/").listFiles();
-     */
-
     public void plotAccelerometerData(View view) {
         String fileName = spinnerAccelerometer.getSelectedItem().toString();
         File accelerometerFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
