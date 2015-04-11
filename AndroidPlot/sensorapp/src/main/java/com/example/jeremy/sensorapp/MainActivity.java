@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Spinner;
@@ -474,6 +475,11 @@ public class MainActivity extends Activity
                 (TextView) findViewById(R.id.TextView_Gyroscope);
         accelerometerTextView =
                 (TextView) findViewById(R.id.TextView_Accelerometer);
+
+        barometerFileName = (EditText) findViewById(R.id.editTextBarometerFileName);
+        gyroscopeFileName = (EditText) findViewById(R.id.editTextGyroscopeFileName);
+        accelerometerFileName = (EditText) findViewById(R.id.editTextAccelerometerFileName);
+
         startAll = (Button) findViewById(R.id.startAll);
         stopAll = (Button) findViewById(R.id.stopAll);
 
@@ -646,6 +652,11 @@ public class MainActivity extends Activity
         startBarometerButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Start barometer sampling
+                try {
+                    openLogFilesBarometer(barometerFileName.getText().toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 addItemsOnSpinner();
                 startBarometerSampling();
                 // Disable the start and enable stop button
@@ -673,6 +684,11 @@ public class MainActivity extends Activity
         startAccelerometerButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Start barometer sampling
+                try {
+                    openLogFilesAccelerometer(accelerometerFileName.getText().toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 addItemsOnSpinner();
                 startAccelerometerSampling();
                 // Disable the start and enable stop button
@@ -700,6 +716,11 @@ public class MainActivity extends Activity
         startGyroscopeButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Start barometer sampling
+                try {
+                    openLogFilesGyroscope(gyroscopeFileName.getText().toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 addItemsOnSpinner();
                 startGyroscopeSampling();
                 // Disable the start and enable stop button
@@ -978,7 +999,102 @@ public class MainActivity extends Activity
         locationLogFileOut = new PrintWriter( fout );
         */
     }
+    public void openLogFilesBarometer(String barometerFileName)
+            throws IOException {
 
+        // First, check if the sdcard is available for writing
+        String externalStorageState = Environment.getExternalStorageState();
+        if (!externalStorageState.equals(Environment.MEDIA_MOUNTED) &&
+                !externalStorageState.equals(Environment.MEDIA_SHARED))
+            throw new IOException("sdcard is not mounted on the filesystem");
+
+        // Second, create the log directory
+        File logDirectory = new File(Environment.getExternalStorageDirectory(),
+                "CS4222DataCollector");
+        logDirectory.mkdirs();
+        if (!logDirectory.isDirectory())
+            throw new IOException("Unable to create log directory");
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        //System.out.println(timeStamp);
+
+        // Third, create output streams for the log files (APPEND MODE)
+        // Barometer log
+        File logFile = new File(logDirectory, barometerFileName+"Barometer.csv");
+        FileOutputStream fout = new FileOutputStream(logFile, true);
+        barometerLogFileOut = new PrintWriter(fout);
+
+        // Location log
+        /*
+        logFile = new File( logDirectory , "GPS.csv" );
+        fout = new FileOutputStream( logFile , true );
+        locationLogFileOut = new PrintWriter( fout );
+        */
+    }
+
+    public void openLogFilesAccelerometer(String accelerometerFileName)
+            throws IOException {
+
+        // First, check if the sdcard is available for writing
+        String externalStorageState = Environment.getExternalStorageState();
+        if (!externalStorageState.equals(Environment.MEDIA_MOUNTED) &&
+                !externalStorageState.equals(Environment.MEDIA_SHARED))
+            throw new IOException("sdcard is not mounted on the filesystem");
+
+        // Second, create the log directory
+        File logDirectory = new File(Environment.getExternalStorageDirectory(),
+                "CS4222DataCollector");
+        logDirectory.mkdirs();
+        if (!logDirectory.isDirectory())
+            throw new IOException("Unable to create log directory");
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        //System.out.println(timeStamp);
+
+        // Third, create output streams for the log files (APPEND MODE)
+        // Barometer log
+        File logFile = new File(logDirectory, accelerometerFileName+"Accelerometer.csv");
+        FileOutputStream fout = new FileOutputStream(logFile, true);
+        accelerometerLogFileOut = new PrintWriter(fout);
+        // Location log
+        /*
+        logFile = new File( logDirectory , "GPS.csv" );
+        fout = new FileOutputStream( logFile , true );
+        locationLogFileOut = new PrintWriter( fout );
+        */
+    }
+    public void openLogFilesGyroscope(String gyroscopeFileName)
+            throws IOException {
+
+        // First, check if the sdcard is available for writing
+        String externalStorageState = Environment.getExternalStorageState();
+        if (!externalStorageState.equals(Environment.MEDIA_MOUNTED) &&
+                !externalStorageState.equals(Environment.MEDIA_SHARED))
+            throw new IOException("sdcard is not mounted on the filesystem");
+
+        // Second, create the log directory
+        File logDirectory = new File(Environment.getExternalStorageDirectory(),
+                "CS4222DataCollector");
+        logDirectory.mkdirs();
+        if (!logDirectory.isDirectory())
+            throw new IOException("Unable to create log directory");
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        //System.out.println(timeStamp);
+
+        // Third, create output streams for the log files (APPEND MODE)
+        // Barometer log
+        File logFile = new File(logDirectory, gyroscopeFileName+"Gyroscope.csv");
+        FileOutputStream fout = new FileOutputStream(logFile, true);
+        gyroscopeLogFileOut = new PrintWriter(fout);
+
+        // Location log
+        /*
+        logFile = new File( logDirectory , "GPS.csv" );
+        fout = new FileOutputStream( logFile , true );
+        locationLogFileOut = new PrintWriter( fout );
+        */
+    }
     /**
      * Helper method that closes the log files.
      */
@@ -1043,6 +1159,9 @@ public class MainActivity extends Activity
     private TextView gyroscopeTextView;
     private TextView accelerometerTextView;
 
+    private EditText barometerFileName;
+    private EditText gyroscopeFileName;
+    private EditText accelerometerFileName;
     /**
      * Sensor Manager.
      */
