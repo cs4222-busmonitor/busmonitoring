@@ -1,11 +1,16 @@
 package com.example.yude.androidplot;
 import android.app.Activity;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.FileObserver;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -102,6 +107,15 @@ public class SimpleXYPlotActivity extends Activity
     private Spinner spinnerBarometer;
     private Spinner spinnerAccelerometer;
     private Spinner spinnerGyroscope;
+
+    private FileObserver observer;
+    private boolean accelerometerButtonPressed=false;
+    private boolean barometerButtonPressed=false;
+    private boolean gyroscopeButtonPressed=false;
+
+    private Button accelerometerButton;
+    private Button gyroscopeButton;
+    private Button barometerButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -254,7 +268,38 @@ public class SimpleXYPlotActivity extends Activity
         spinnerBarometer = (Spinner) findViewById(R.id.spinnerBarometer);
         spinnerAccelerometer = (Spinner) findViewById(R.id.spinnerAccelerometer);
         spinnerGyroscope = (Spinner) findViewById(R.id.spinnerGyroscope);
+
         addItemsOnSpinner();
+
+        barometerButton = (Button) findViewById(R.id.barometerButton);
+        accelerometerButton = (Button) findViewById(R.id.accelerometerButton);
+        gyroscopeButton = (Button) findViewById(R.id.gyroscopeButton);
+
+        observer = new FileObserver(Environment
+                .getExternalStorageDirectory().getPath()
+                + "/CS4222DataCollector/") { // set up a file observer to watch this directory on sd card
+
+            @Override
+            public void onEvent(int event, String file) {
+                //if(event == FileObserver.CREATE && !file.equals(".probe")){ // check if its a "create" and not equal to .probe because thats created every time camera is launched
+            //    createToast("Event = " + event);
+                    //}
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    createToast(e.toString());
+                }
+                if(barometerButtonPressed){
+                    drawBarometer();
+                }else if(gyroscopeButtonPressed) {
+                   drawGyroscope();
+                }else if(accelerometerButtonPressed) {
+                    drawAccelerometer();
+                }
+            }
+        };
+        observer.startWatching(); //START OBSERVING
+
     }
 
     private class ChatMessageListener
@@ -463,7 +508,14 @@ public class SimpleXYPlotActivity extends Activity
                 clickThread.start();
             }
 
+
+
     public void plotAccelerometerData(View view) {
+
+        accelerometerButtonPressed = true;
+        barometerButtonPressed = false;
+        gyroscopeButtonPressed = false;
+
         String fileName = spinnerAccelerometer.getSelectedItem().toString();
         File accelerometerFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
 
@@ -509,6 +561,11 @@ public class SimpleXYPlotActivity extends Activity
     }
 
     public void plotBarometerData(View view) {
+
+        accelerometerButtonPressed = false;
+        barometerButtonPressed = true;
+        gyroscopeButtonPressed = false;
+
         String fileName = spinnerBarometer.getSelectedItem().toString();
         File barometerFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
 
@@ -536,6 +593,11 @@ public class SimpleXYPlotActivity extends Activity
     }
 
     public void plotGyroscopeData(View view) {
+
+        accelerometerButtonPressed = false;
+        barometerButtonPressed = false;
+        gyroscopeButtonPressed = true;
+
         String fileName = spinnerGyroscope.getSelectedItem().toString();
         File gyroscopeFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
 
@@ -771,5 +833,132 @@ public class SimpleXYPlotActivity extends Activity
             }
         }
         return ret;
+    }
+
+    private void drawAccelerometer() {
+        accelerometerButtonPressed = true;
+        barometerButtonPressed = false;
+        gyroscopeButtonPressed = false;
+
+        String fileName = spinnerAccelerometer.getSelectedItem().toString();
+        File accelerometerFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
+
+        prepareAccelerometerDataLists(accelerometerFile);
+
+        Log.v("plotAccelerometerData", "Plotting accelerometer data...");
+        plot.clear();
+        plot.setTitle("Accelerometer Data");
+        XYSeries accelXSeries = new SimpleXYSeries(
+                list_Accel_Time,            // Time on x axis
+                list_Accel_X,               // accelerometer x value on y axis
+                "X");         // Set the display title of the series
+        XYSeries accelYSeries = new SimpleXYSeries(
+                list_Accel_Time,            // Time on x axis
+                list_Accel_Y,               // accelerometer y value on y axis
+                "Y");         // Set the display title of the series
+        XYSeries accelZSeries = new SimpleXYSeries(
+                list_Accel_Time,            // Time on x axis
+                list_Accel_Z,               // accelerometer z value on y axis
+                "Z");         // Set the display title of the series
+
+        // Create a formatter to use for drawing a series using LineAndPointRenderer
+        // and configure it from xml:
+        LineAndPointFormatter series1Format = new LineAndPointFormatter();
+        series1Format.setPointLabelFormatter(new PointLabelFormatter());
+        series1Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf1);
+        LineAndPointFormatter series2Format = new LineAndPointFormatter();
+        series2Format.setPointLabelFormatter(new PointLabelFormatter());
+        series2Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf2);
+        LineAndPointFormatter series3Format = new LineAndPointFormatter();
+        series3Format.setPointLabelFormatter(new PointLabelFormatter());
+        series3Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf3);
+
+        // Add series
+        plot.addSeries(accelXSeries, series1Format);
+        plot.addSeries(accelYSeries, series2Format);
+        plot.addSeries(accelZSeries, series3Format);
+
+        plot.redraw();
+    }
+    private void drawBarometer(){
+        accelerometerButtonPressed = false;
+        barometerButtonPressed = true;
+        gyroscopeButtonPressed = false;
+
+        String fileName = spinnerBarometer.getSelectedItem().toString();
+        File barometerFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
+
+        prepareBarometerDataLists(barometerFile);
+
+        Log.v("plotBarometerData", "Plotting barometer data...");
+        plot.clear();
+        plot.setTitle("Barometer Data");
+        XYSeries baroHeightSeries = new SimpleXYSeries(
+                list_Baro_Time,
+                list_Baro_Height,
+                "Height");
+
+        // Create a formatter to use for drawing a series using LineAndPointRenderer
+        // and configure it from xml:
+        LineAndPointFormatter series1Format = new LineAndPointFormatter();
+        series1Format.setPointLabelFormatter(new PointLabelFormatter());
+        series1Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf1);
+
+        // Add series
+        plot.addSeries(baroHeightSeries, series1Format);
+
+        plot.redraw();
+    }
+    private void drawGyroscope(){
+        accelerometerButtonPressed = false;
+        barometerButtonPressed = false;
+        gyroscopeButtonPressed = true;
+
+        String fileName = spinnerGyroscope.getSelectedItem().toString();
+        File gyroscopeFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
+
+        prepareGyroscopeDataLists(gyroscopeFile);
+
+        Log.v("plotGyroscopeData", "Plotting gyroscope data...");
+        plot.clear();
+        plot.setTitle("Gyroscope Data");
+        XYSeries gyroXSeries = new SimpleXYSeries(
+                list_Gyro_Time,
+                list_Gyro_X,
+                "X");
+        XYSeries gyroYSeries = new SimpleXYSeries(
+                list_Gyro_Time,
+                list_Gyro_Y,
+                "Y");
+        XYSeries gyroZSeries = new SimpleXYSeries(
+                list_Gyro_Time,
+                list_Gyro_Z,
+                "Z");
+
+        // Create a formatter to use for drawing a series using LineAndPointRenderer
+        // and configure it from xml:
+        LineAndPointFormatter series1Format = new LineAndPointFormatter();
+        series1Format.setPointLabelFormatter(new PointLabelFormatter());
+        series1Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf1);
+        LineAndPointFormatter series2Format = new LineAndPointFormatter();
+        series2Format.setPointLabelFormatter(new PointLabelFormatter());
+        series2Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf2);
+        LineAndPointFormatter series3Format = new LineAndPointFormatter();
+        series3Format.setPointLabelFormatter(new PointLabelFormatter());
+        series3Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf3);
+
+        // Add series
+        plot.addSeries(gyroXSeries, series1Format);
+        plot.addSeries(gyroYSeries, series2Format);
+        plot.addSeries(gyroZSeries, series3Format);
+
+        plot.redraw();
     }
 }
