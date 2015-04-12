@@ -65,11 +65,11 @@ public class SimpleXYPlotActivity extends Activity
     private final static double THRESHOLD_ACCEL = 1.1;
     private final static double THRESHOLD_BRAKE = -1.3;
     private final static double THRESHOLD_TURNLEFT = -1.1;
-    private final static double THRESHOLD_TURNLRIGHT = 1.1;
+    private final static double THRESHOLD_TURNRIGHT = 1.1;
     private final static double THRESHOLD_TURNABOUT_LEFT = -1.5; // must be below 1.5
     private final static double THRESHOLD_TURNABOUT_RIGHT = 1.5; // must be below 1.5
 
-    private final static double SECONDS_TURNLAROUND = 7; //
+    private final static double SECONDS_TURNLAROUND = 6.5; //
 
     private final static String FILENAME_ACCEL_DATA = "Accelerometer.csv";
     private final static String FILENAME_BARO_DATA = "Barometer.csv";
@@ -1055,8 +1055,8 @@ public class SimpleXYPlotActivity extends Activity
         // brake (negative y axis) -1.3
         // left turn (negative x) -1.1
         // right turn (positive x) 1.1
-        // turnabout right -1.5
-        // turnabout left 1.5
+        // turnabout right 1.5
+        // turnabout left -1.5
         // turnabout 7
         String result = "";
 
@@ -1069,6 +1069,7 @@ public class SimpleXYPlotActivity extends Activity
         double turnLeftMax = 0;
         double startTime=0 ;
         double endTime=0 ;
+        int totalOffenseCount = 0;
         for(int i=0;i<list_Accel_Time.size();i++) {
             // checking for acceleration and braking(y axis)
             if(list_Accel_Y.get(i)>0){
@@ -1096,6 +1097,7 @@ public class SimpleXYPlotActivity extends Activity
                         double accelerationMaxRounded = Math.round(accelerationMax * p)/p;
                         String current = startTime + "-" + endTime +", "+accelerationMaxRounded+ ", accelerates too fast\n";
                         result = result + current;
+                        totalOffenseCount++;
 
                     }
                     accelerationMax = 0;
@@ -1128,6 +1130,7 @@ public class SimpleXYPlotActivity extends Activity
                         double brakeMaxRounded = Math.round(brakeMax * p)/p;
                         String current = startTime + "-" + endTime +", "+brakeMaxRounded+ ", breaks too fast\n";
                         result = result + current;
+                        totalOffenseCount++;
 
                     }
                     brakeMax = 0;
@@ -1139,12 +1142,88 @@ public class SimpleXYPlotActivity extends Activity
 
             // checking for turns
             if(list_Accel_X.get(i)>0){
+                if(list_Accel_X.get(i)>turnRightMax) {
+                    turnRightMax = list_Accel_X.get(i);
+                }else{
+                    // to get start/end time
+                    if(turnRightMax >THRESHOLD_TURNRIGHT) {
+                        for (int j = i; j >= 0; j--) {
+                            if (list_Accel_X.get(j) > -0.2 && list_Accel_X.get(j) < 0.2) {
+                                startTime = list_Accel_Time.get(j);
+                                break;
+                            }
+
+                        }
+                        for (int j = i; j < list_Accel_Time.size(); j++) {
+                            if (list_Accel_X.get(j) > -0.2 && list_Accel_X.get(j) < 0.2) {
+                                endTime = list_Accel_Time.get(j);
+                                i=j;
+                                break;
+                            }
+                        }
+                        if(endTime-startTime<SECONDS_TURNLAROUND) {
+                            double p = Math.pow(10d, 4);
+                            double turnRightMaxRounded = Math.round(turnRightMax * p) / p;
+                            String current = startTime + "-" + endTime + ", " + turnRightMaxRounded + ", turn right too fast\n";
+                            result = result + current;
+                            totalOffenseCount++;
+                        }else if(turnRightMax>THRESHOLD_TURNABOUT_RIGHT){
+                            double p = Math.pow(10d, 4);
+                            double turnRightMaxRounded = Math.round(turnRightMax * p) / p;
+                            String current = startTime + "-" + endTime + ", " + turnRightMaxRounded + ", turnabout right too fast\n";
+                            result = result + current;
+                            totalOffenseCount++;
+                        }
+
+                    }
+                    turnRightMax = 0;
+                    startTime = 0;
+                    endTime = 0;
+                }
 
             }else if(list_Accel_X.get(i)<0){
+                if(list_Accel_X.get(i)>turnLeftMax) {
+                    turnLeftMax = list_Accel_X.get(i);
+                }else{
+                    // to get start/end time
+                    if(turnLeftMax <THRESHOLD_TURNLEFT) {
+                        for (int j = i; j >= 0; j--) {
+                            if (list_Accel_X.get(j) > -0.2 && list_Accel_X.get(j) < 0.2) {
+                                startTime = list_Accel_Time.get(j);
+                                break;
+                            }
+
+                        }
+                        for (int j = i; j < list_Accel_Time.size(); j++) {
+                            if (list_Accel_X.get(j) > -0.2 && list_Accel_X.get(j) < 0.2) {
+                                endTime = list_Accel_Time.get(j);
+                                i=j;
+                                break;
+                            }
+                        }
+                        if(endTime-startTime<SECONDS_TURNLAROUND) {
+                            double p = Math.pow(10d, 4);
+                            double turnLeftMaxRounded = Math.round(turnLeftMax * p) / p;
+                            String current = startTime + "-" + endTime + ", " + turnLeftMaxRounded + ", turn left too fast\n";
+                            result = result + current;
+                            totalOffenseCount++;
+                        }else if(turnLeftMax<THRESHOLD_TURNABOUT_LEFT){
+                            double p = Math.pow(10d, 4);
+                            double turnLeftMaxRounded = Math.round(turnLeftMax * p) / p;
+                            String current = startTime + "-" + endTime + ", " + turnLeftMaxRounded + ", turnabout left too fast\n";
+                            result = result + current;
+                            totalOffenseCount++;
+                        }
+
+                    }
+                    turnLeftMax = 0;
+                    startTime = 0;
+                    endTime = 0;
+                }
 
             }
         }
-
+        result = result+"You have a total of "+totalOffenseCount+"\n";
         textViewForResult.setText(result);
     }
 }
