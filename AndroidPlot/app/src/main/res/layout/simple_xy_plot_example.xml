@@ -36,6 +36,29 @@
             androidPlot.graphWidget.gridLinePaint.color="#000000"/>
     </LinearLayout>
 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/start_time"
+            android:inputType="numberDecimal"
+            android:id="@+id/plotStartRange" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/end_time"
+            android:inputType="numberDecimal"
+            android:id="@+id/plotEndRange" />
+    </LinearLayout>
+
     <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -8,5 +8,7 @@
     <string name="barometer_data">Barometer Data</string>
     <string name="gyroscope_data">Gyroscope Data</string>
     <string name="push_data">Push Data</string>
+    <string name="start_time">Start time</string>
+    <string name="end_time">End time</string>
 
 </resources>

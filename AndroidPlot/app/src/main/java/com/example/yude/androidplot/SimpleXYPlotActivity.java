@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -520,6 +521,7 @@ public class SimpleXYPlotActivity extends Activity
         File accelerometerFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
 
         prepareAccelerometerDataLists(accelerometerFile);
+        preparePlot();
 
         Log.v("plotAccelerometerData", "Plotting accelerometer data...");
         plot.clear();
@@ -570,6 +572,7 @@ public class SimpleXYPlotActivity extends Activity
         File barometerFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
 
         prepareBarometerDataLists(barometerFile);
+        preparePlot();
 
         Log.v("plotBarometerData", "Plotting barometer data...");
         plot.clear();
@@ -602,6 +605,7 @@ public class SimpleXYPlotActivity extends Activity
         File gyroscopeFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
 
         prepareGyroscopeDataLists(gyroscopeFile);
+        preparePlot();
 
         Log.v("plotGyroscopeData", "Plotting gyroscope data...");
         plot.clear();
@@ -736,6 +740,46 @@ public class SimpleXYPlotActivity extends Activity
         list_Gyro_X = smoothenData(list_Gyro_X, DEFAULT_SMOOTHENING_NUMPOINTS);
         list_Gyro_Y = smoothenData(list_Gyro_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
         list_Gyro_Z = smoothenData(list_Gyro_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
+    }
+
+    private void preparePlot() {
+        double startRange = getPlotStartRange();
+        double endRange = getPlotEndRange();
+        if (startRange < 0.0) {
+            startRange = 0.0;
+        }
+        plot.setDomainLeftMin(startRange);
+        if (endRange < 0.0) {
+            plot.setDomainRightMax(999999999);
+        } else {
+            plot.setDomainRightMax(endRange);
+        }
+    }
+
+    // negative denotes start of range (effectively, no input specified)
+    private double getPlotStartRange() {
+        String startRangeStr = ((EditText) findViewById(R.id.plotStartRange)).getText().toString();
+        double startRange;
+        if (startRangeStr == null || startRangeStr.isEmpty()) {
+            startRange = -1.0; // not specified, start from the start
+        } else {
+            startRange = Double.parseDouble(startRangeStr);
+        }
+        Log.v("getPlotStartRange()", "startRange = " + startRange);
+        return startRange;
+    }
+
+    // Negative end range denotes, effectively, no input
+    private double getPlotEndRange() {
+        String endRangeStr = ((EditText) findViewById(R.id.plotEndRange)).getText().toString();
+        double endRange;
+        if (endRangeStr == null || endRangeStr.isEmpty()) {
+            endRange = -1.0; // negative to denote that we should plot to the end of the data
+        } else {
+            endRange = Double.parseDouble(endRangeStr);
+        }
+        Log.v("getPlotEndRange()", "endRange = " + endRange);
+        return endRange;
     }
 
     private ArrayList<Double> divideDoubles(ArrayList<Double> doubleList, int divisor) {
