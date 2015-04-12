@@ -1,9 +1,8 @@
 package com.example.yude.androidplot;
 
 import android.app.Activity;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
+import android.os.*;
+import android.os.Process;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -794,6 +793,7 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 		}
 
 		public void pauseThread() {
+			android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 			isPause = true;
 			Log.v("Thread","pause");
 		}
@@ -802,6 +802,7 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 			readingCount = 0;
 			keepRunning = true;
 			isPause = false;
+			android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND);
 			Log.v("Thread","start");
 		}
 
