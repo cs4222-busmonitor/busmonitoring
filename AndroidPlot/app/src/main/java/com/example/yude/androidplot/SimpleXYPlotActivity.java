@@ -186,7 +186,7 @@ public class SimpleXYPlotActivity extends Activity
         setContentView(R.layout.simple_xy_plot_example);
 
         // initialize our XYPlot reference:
-        plot = (XYPlot) findViewById(R.id.mySimpleXYPlot);
+        plot = (XYPlot) findViewById(R.id.myDataPlot);
 
         // Create a couple arrays of y-values to plot:
         Number[] series1Numbers = {1, 8, 5, 2, 7, 4};
