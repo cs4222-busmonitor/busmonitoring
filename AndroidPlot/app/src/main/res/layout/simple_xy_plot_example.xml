@@ -122,5 +122,26 @@
             android:text="@string/push_data"
             android:onClick="pushData" />
 
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/spinnerForAllFiles"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_gravity="center_horizontal" />
+
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/evaluate_file"
+            android:onClick="evaluateFile" />
+
+        <TextView
+            android:id="@+id/TextView_EvaluationResult"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="" />
+
     </LinearLayout>
 </ScrollView>

@@ -49,6 +49,8 @@ import android.telephony.TelephonyManager;
 import android.os.Handler;
 import android.widget.Toast;
 
+import javax.xml.transform.dom.DOMLocator;
+
 /**
  * A straightforward example of using AndroidPlot to plot some data.
  */
@@ -57,6 +59,17 @@ public class SimpleXYPlotActivity extends Activity
     private final static String DIRECTORYNAME_DATACOLLECTOR= Environment
             .getExternalStorageDirectory().getPath()
             + "/CS4222DataCollector/";
+
+
+    // threshold to be safe
+    private final static double THRESHOLD_ACCEL = 1.1;
+    private final static double THRESHOLD_BRAKE = -1.3;
+    private final static double THRESHOLD_TURNLEFT = -1.1;
+    private final static double THRESHOLD_TURNLRIGHT = 1.1;
+    private final static double THRESHOLD_TURNABOUT_LEFT = -1.5; // must be below 1.5
+    private final static double THRESHOLD_TURNABOUT_RIGHT = 1.5; // must be below 1.5
+
+    private final static double SECONDS_TURNLAROUND = 7; //
 
     private final static String FILENAME_ACCEL_DATA = "Accelerometer.csv";
     private final static String FILENAME_BARO_DATA = "Barometer.csv";
@@ -119,6 +132,7 @@ public class SimpleXYPlotActivity extends Activity
     private Button barometerButton;
 
     private Spinner spinnerForAllFiles;
+    private TextView textViewForResult;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -272,6 +286,9 @@ public class SimpleXYPlotActivity extends Activity
         spinnerAccelerometer = (Spinner) findViewById(R.id.spinnerAccelerometer);
         spinnerGyroscope = (Spinner) findViewById(R.id.spinnerGyroscope);
 
+        spinnerForAllFiles = (Spinner) findViewById(R.id.spinnerForAllFiles);
+        textViewForResult = (TextView) findViewById(R.id.TextView_EvaluationResult);
+
         addItemsOnSpinner();
 
         barometerButton = (Button) findViewById(R.id.barometerButton);
@@ -303,6 +320,7 @@ public class SimpleXYPlotActivity extends Activity
         };
         observer.startWatching(); //START OBSERVING
 */
+
     }
 
     private class ChatMessageListener
@@ -406,6 +424,7 @@ public class SimpleXYPlotActivity extends Activity
         List<String> listBarometer = new ArrayList<String>();
         List<String> listAccelerometer = new ArrayList<String>();
         List<String> listGyroscope = new ArrayList<String>();
+        List<String> listOfAllFiles = new ArrayList<String>();
 
         if ( storageDir != null ) {
             for ( File file : storageDir ) {
@@ -415,9 +434,11 @@ public class SimpleXYPlotActivity extends Activity
                         listBarometer.add(tempDirectory);
                     }else if(file.getAbsolutePath().contains("Accelerometer")){
                         listAccelerometer.add(tempDirectory);
+                        listOfAllFiles.add(tempDirectory);
                     }else if(file.getAbsolutePath().contains("Gyroscope")){
                         listGyroscope.add(tempDirectory);
                     }
+
                     result = result + file.getAbsolutePath() + "\n";
                 }
             }
@@ -436,6 +457,10 @@ public class SimpleXYPlotActivity extends Activity
             dataAdapterGyroscope.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerGyroscope.setAdapter(dataAdapterGyroscope);
 
+            ArrayAdapter<String> dataAdapterForAllFiles = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, listOfAllFiles);
+            dataAdapterForAllFiles.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerForAllFiles.setAdapter(dataAdapterForAllFiles);
 
             //testText.setText(result);
         }
@@ -970,7 +995,156 @@ public class SimpleXYPlotActivity extends Activity
 
         plot.redraw();
     }
-    private void evaluateFile(){
+    public void evaluateFile(View view){
 
+
+        String fileName = spinnerForAllFiles.getSelectedItem().toString();
+        File selectedFileForEvaluation = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
+
+        if(selectedFileForEvaluation.getAbsolutePath().contains("Barometer")){
+            prepareBarometerDataLists(selectedFileForEvaluation);
+        }else if(selectedFileForEvaluation.getAbsolutePath().contains("Accelerometer")){
+            prepareAccelerometerDataLists(selectedFileForEvaluation);
+        }else if(selectedFileForEvaluation.getAbsolutePath().contains("Gyroscope")){
+            prepareGyroscopeDataLists(selectedFileForEvaluation);
+        }
+
+
+
+        preparePlot();
+
+        Log.v("plotAccelerometerData", "Plotting accelerometer data...");
+        plot.clear();
+        plot.setTitle("Accelerometer Data");
+        XYSeries accelXSeries = new SimpleXYSeries(
+                list_Accel_Time,            // Time on x axis
+                list_Accel_X,               // accelerometer x value on y axis
+                "X");         // Set the display title of the series
+        XYSeries accelYSeries = new SimpleXYSeries(
+                list_Accel_Time,            // Time on x axis
+                list_Accel_Y,               // accelerometer y value on y axis
+                "Y");         // Set the display title of the series
+        XYSeries accelZSeries = new SimpleXYSeries(
+                list_Accel_Time,            // Time on x axis
+                list_Accel_Z,               // accelerometer z value on y axis
+                "Z");         // Set the display title of the series
+
+        // Create a formatter to use for drawing a series using LineAndPointRenderer
+        // and configure it from xml:
+        LineAndPointFormatter series1Format = new LineAndPointFormatter();
+        series1Format.setPointLabelFormatter(new PointLabelFormatter());
+        series1Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf1);
+        LineAndPointFormatter series2Format = new LineAndPointFormatter();
+        series2Format.setPointLabelFormatter(new PointLabelFormatter());
+        series2Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf2);
+        LineAndPointFormatter series3Format = new LineAndPointFormatter();
+        series3Format.setPointLabelFormatter(new PointLabelFormatter());
+        series3Format.configure(getApplicationContext(),
+                R.xml.line_point_formatter_with_plf3);
+
+        // Add series
+        plot.addSeries(accelXSeries, series1Format);
+        plot.addSeries(accelYSeries, series2Format);
+        plot.addSeries(accelZSeries, series3Format);
+
+        plot.redraw();
+
+        // acceleration (positive y axis) 1.3
+        // brake (negative y axis) -1.3
+        // left turn (negative x) -1.1
+        // right turn (positive x) 1.1
+        // turnabout right -1.5
+        // turnabout left 1.5
+        // turnabout 7
+        String result = "";
+
+
+        double accelerationMax = 0;
+        double brakeMax = 0;
+        double turnAboutRightMax = 0;
+        double turnAboutLeftMax = 0;
+        double turnRightMax = 0;
+        double turnLeftMax = 0;
+        double startTime=0 ;
+        double endTime=0 ;
+        for(int i=0;i<list_Accel_Time.size();i++) {
+            // checking for acceleration and braking(y axis)
+            if(list_Accel_Y.get(i)>0){
+                if(list_Accel_Y.get(i)>accelerationMax) {
+                    accelerationMax = list_Accel_Y.get(i);
+                }else{
+                    // to get start/end time
+                    if(accelerationMax >THRESHOLD_ACCEL) {
+                        for (int j = i; j >= 0; j--) {
+                            if (list_Accel_Y.get(j) > -0.2 && list_Accel_Y.get(j) < 0.2) {
+                                startTime = list_Accel_Time.get(j);
+                                break;
+                            }
+
+                        }
+                        for (int j = i; j < list_Accel_Time.size(); j++) {
+                            if (list_Accel_Y.get(j) > -0.2 && list_Accel_Y.get(j) < 0.2) {
+                                endTime = list_Accel_Time.get(j);
+                                i=j;
+                                break;
+                            }
+                        }
+
+                        double p = Math.pow(10d, 4);
+                        double accelerationMaxRounded = Math.round(accelerationMax * p)/p;
+                        String current = startTime + "-" + endTime +", "+accelerationMaxRounded+ ", accelerates too fast\n";
+                        result = result + current;
+
+                    }
+                    accelerationMax = 0;
+                    startTime = 0;
+                    endTime = 0;
+                }
+
+            }else if(list_Accel_Y.get(i)<0){
+                if(list_Accel_Y.get(i)<brakeMax) {
+                    brakeMax = list_Accel_Y.get(i);
+                }else{
+                    // to get start/end time
+                    if(brakeMax < THRESHOLD_BRAKE) {
+                        for (int j = i; j >= 0; j--) {
+                            if (list_Accel_Y.get(j) > -0.2 && list_Accel_Y.get(j) < 0.2) {
+                                startTime = list_Accel_Time.get(j);
+                                break;
+                            }
+
+                        }
+                        for (int j = i; j < list_Accel_Time.size(); j++) {
+                            if (list_Accel_Y.get(j) > -0.2 && list_Accel_Y.get(j) < 0.2) {
+                                endTime = list_Accel_Time.get(j);
+                                i=j;
+                                break;
+                            }
+                        }
+
+                        double p = Math.pow(10d, 4);
+                        double brakeMaxRounded = Math.round(brakeMax * p)/p;
+                        String current = startTime + "-" + endTime +", "+brakeMaxRounded+ ", breaks too fast\n";
+                        result = result + current;
+
+                    }
+                    brakeMax = 0;
+                    startTime = 0;
+                    endTime = 0;
+                }
+            }
+
+
+            // checking for turns
+            if(list_Accel_X.get(i)>0){
+
+            }else if(list_Accel_X.get(i)<0){
+
+            }
+        }
+
+        textViewForResult.setText(result);
     }
 }
