@@ -6,23 +6,23 @@
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
-        android:layout_height="600px"
-        android:layout_weight="7"
+        android:layout_height="1000px"
+        android:layout_weight="10"
         android:orientation="vertical">
 
         <com.androidplot.xy.XYPlot
             android:id="@+id/mySimpleXYPlot"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            androidPlot.title="A Simple XY Plot"
+            androidPlot.title="DataPlot"
             androidPlot.domainLabel="Domain"
             androidPlot.rangeLabel="Range"
             androidPlot.titleWidget.labelPaint.textSize="@dimen/title_font_size"
             androidPlot.domainLabelWidget.labelPaint.textSize="@dimen/domain_label_font_size"
             androidPlot.rangeLabelWidget.labelPaint.textSize="@dimen/range_label_font_size"
             androidPlot.graphWidget.marginTop="20dp"
-            androidPlot.graphWidget.marginLeft="15dp"
-            androidPlot.graphWidget.marginBottom="25dp"
+            androidPlot.graphWidget.marginLeft="20dp"
+            androidPlot.graphWidget.marginBottom="35dp"
             androidPlot.graphWidget.marginRight="10dp"
             androidPlot.graphWidget.rangeLabelPaint.textSize="@dimen/range_tick_label_font_size"
             androidPlot.graphWidget.rangeOriginLabelPaint.textSize="@dimen/range_tick_label_font_size"
