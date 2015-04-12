@@ -118,6 +118,8 @@ public class SimpleXYPlotActivity extends Activity
     private Button gyroscopeButton;
     private Button barometerButton;
 
+    private Spinner spinnerForAllFiles;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -968,52 +970,7 @@ public class SimpleXYPlotActivity extends Activity
 
         plot.redraw();
     }
-    private void drawGyroscope(){
-        accelerometerButtonPressed = false;
-        barometerButtonPressed = false;
-        gyroscopeButtonPressed = true;
+    private void evaluateFile(){
 
-        String fileName = spinnerGyroscope.getSelectedItem().toString();
-        File gyroscopeFile = new File(DIRECTORYNAME_DATACOLLECTOR, fileName);
-
-        prepareGyroscopeDataLists(gyroscopeFile);
-
-        Log.v("plotGyroscopeData", "Plotting gyroscope data...");
-        plot.clear();
-        plot.setTitle("Gyroscope Data");
-        XYSeries gyroXSeries = new SimpleXYSeries(
-                list_Gyro_Time,
-                list_Gyro_X,
-                "X");
-        XYSeries gyroYSeries = new SimpleXYSeries(
-                list_Gyro_Time,
-                list_Gyro_Y,
-                "Y");
-        XYSeries gyroZSeries = new SimpleXYSeries(
-                list_Gyro_Time,
-                list_Gyro_Z,
-                "Z");
-
-        // Create a formatter to use for drawing a series using LineAndPointRenderer
-        // and configure it from xml:
-        LineAndPointFormatter series1Format = new LineAndPointFormatter();
-        series1Format.setPointLabelFormatter(new PointLabelFormatter());
-        series1Format.configure(getApplicationContext(),
-                R.xml.line_point_formatter_with_plf1);
-        LineAndPointFormatter series2Format = new LineAndPointFormatter();
-        series2Format.setPointLabelFormatter(new PointLabelFormatter());
-        series2Format.configure(getApplicationContext(),
-                R.xml.line_point_formatter_with_plf2);
-        LineAndPointFormatter series3Format = new LineAndPointFormatter();
-        series3Format.setPointLabelFormatter(new PointLabelFormatter());
-        series3Format.configure(getApplicationContext(),
-                R.xml.line_point_formatter_with_plf3);
-
-        // Add series
-        plot.addSeries(gyroXSeries, series1Format);
-        plot.addSeries(gyroYSeries, series2Format);
-        plot.addSeries(gyroZSeries, series3Format);
-
-        plot.redraw();
     }
 }
