@@ -666,6 +666,7 @@ public class SimpleXYPlotActivity extends Activity
 
         // Convert the TimeBeforePrev array lists to time so that they can be used as the domain of the series
         list_Accel_Time = getCumulativeSumList(list_Accel_TimeBeforePrev);
+        list_Accel_Time = divideDoubles(list_Accel_Time, 1000); // convert to seconds
 
         // Smoothen data
 
@@ -697,6 +698,7 @@ public class SimpleXYPlotActivity extends Activity
 
         // Convert the TimeBeforePrev array lists to time so that they can be used as the domain of the series
         list_Baro_Time = getCumulativeSumList(list_Baro_TimeBeforePrev);
+        list_Baro_Time = divideDoubles(list_Baro_Time, 1000); // convert to seconds
 
         // Smoothen data
         list_Baro_Millibar = smoothenData(list_Baro_Millibar, DEFAULT_SMOOTHENING_NUMPOINTS);
@@ -727,12 +729,21 @@ public class SimpleXYPlotActivity extends Activity
 
         // Convert the TimeBeforePrev array lists to time so that they can be used as the domain of the series
         list_Gyro_Time = getCumulativeSumList(list_Gyro_TimeBeforePrev);
+        list_Gyro_Time = divideDoubles(list_Gyro_Time, 1000); // convert to seconds
 
         // Smoothen data
 
         list_Gyro_X = smoothenData(list_Gyro_X, DEFAULT_SMOOTHENING_NUMPOINTS);
         list_Gyro_Y = smoothenData(list_Gyro_Y, DEFAULT_SMOOTHENING_NUMPOINTS);
         list_Gyro_Z = smoothenData(list_Gyro_Z, DEFAULT_SMOOTHENING_NUMPOINTS);
+    }
+
+    private ArrayList<Double> divideDoubles(ArrayList<Double> doubleList, int divisor) {
+        ArrayList<Double> retList = new ArrayList<>();
+        for (int i = 0; i < doubleList.size(); i++) {
+            retList.add(doubleList.get(i)/divisor);
+        }
+        return retList;
     }
 
     private BufferedReader getBufReaderFromAssets(String filename) throws IOException {
