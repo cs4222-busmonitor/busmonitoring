@@ -1,31 +1,179 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:orientation="vertical">
 
-    <com.androidplot.xy.XYPlot
-        android:id="@+id/dynamicXYPlot"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="fill_parent"
+                  android:layout_height="600px"
+                  android:layout_weight="5"
+                  android:orientation="vertical">
+
+        <com.androidplot.xy.XYPlot
+            android:id="@+id/myDataPlot"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            androidPlot.title="DataPlot"
+            androidPlot.domainLabel="Domain"
+            androidPlot.rangeLabel="Range"
+            androidPlot.titleWidget.labelPaint.textSize="@dimen/title_font_size"
+            androidPlot.domainLabelWidget.labelPaint.textSize="@dimen/domain_label_font_size"
+            androidPlot.rangeLabelWidget.labelPaint.textSize="@dimen/range_label_font_size"
+            androidPlot.graphWidget.marginTop="20dp"
+            androidPlot.graphWidget.marginLeft="20dp"
+            androidPlot.graphWidget.marginBottom="35dp"
+            androidPlot.graphWidget.marginRight="10dp"
+            androidPlot.graphWidget.rangeLabelPaint.textSize="@dimen/range_tick_label_font_size"
+            androidPlot.graphWidget.rangeOriginLabelPaint.textSize="@dimen/range_tick_label_font_size"
+            androidPlot.graphWidget.domainLabelPaint.textSize="@dimen/domain_tick_label_font_size"
+            androidPlot.graphWidget.domainOriginLabelPaint.textSize="@dimen/domain_tick_label_font_size"
+            androidPlot.legendWidget.textPaint.textSize="@dimen/legend_text_font_size"
+            androidPlot.legendWidget.iconSizeMetrics.heightMetric.value="15dp"
+            androidPlot.legendWidget.iconSizeMetrics.widthMetric.value="15dp"
+            androidPlot.legendWidget.heightMetric.value="25dp"
+            androidPlot.legendWidget.positionMetrics.anchor="right_bottom"
+            androidPlot.graphWidget.gridLinePaint.color="#000000"/>
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:orientation="horizontal">
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/start_time"
+            android:inputType="numberDecimal"
+            android:id="@+id/plotStartRange" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/end_time"
+            android:inputType="numberDecimal"
+            android:id="@+id/plotEndRange" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="150"
+            android:hint="@string/max_elements"
+            android:inputType="number"
+            android:id="@+id/plotMaxElements" />
+    </LinearLayout>
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerAccelerometer"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center_horizontal" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:orientation="horizontal">
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/accelerometer_data"
+            android:id="@+id/accelerometerButton"/>
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/simulation_start"
+            android:id="@+id/accelerometerStartButton"/>
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/simulation_stop"
+            android:id="@+id/accelerometerStopButton"/>
+    </LinearLayout>
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerBarometer"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center_horizontal" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:orientation="horizontal">
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/barometer_data"
+            android:id="@+id/barometerButton"/>
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/simulation_start"
+            android:id="@+id/barometerStartButton"/>
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/simulation_stop"
+            android:id="@+id/barometerStopButton"/>
+    </LinearLayout>
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerGyroscope"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center_horizontal" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:orientation="horizontal">
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/gyroscope_data"
+            android:id="@+id/gyroscopeButton"/>
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/simulation_start"
+            android:id="@+id/gyroscopeStartButton"/>
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/simulation_stop"
+            android:id="@+id/gyroscopeStopButton"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/TextView_Test"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        androidplot.renderMode="use_background_thread"
-        androidPlot.title="A Dynamic XY Plot"
-        androidPlot.domainLabel="Domain"
-        androidPlot.rangeLabel="Range"
-        androidPlot.titleWidget.labelPaint.textSize="@dimen/title_font_size"
-        androidPlot.domainLabelWidget.labelPaint.textSize="@dimen/domain_label_font_size"
-        androidPlot.rangeLabelWidget.labelPaint.textSize="@dimen/range_label_font_size"
-        androidPlot.graphWidget.marginTop="20dp"
-        androidPlot.graphWidget.marginLeft="15dp"
-        androidPlot.graphWidget.marginBottom="25dp"
-        androidPlot.graphWidget.marginRight="10dp"
-        androidPlot.graphWidget.rangeLabelPaint.textSize="@dimen/range_tick_label_font_size"
-        androidPlot.graphWidget.rangeOriginLabelPaint.textSize="@dimen/range_tick_label_font_size"
-        androidPlot.graphWidget.domainLabelPaint.textSize="@dimen/domain_tick_label_font_size"
-        androidPlot.graphWidget.domainOriginLabelPaint.textSize="@dimen/domain_tick_label_font_size"
-        androidPlot.legendWidget.textPaint.textSize="@dimen/legend_text_font_size"
-        androidPlot.legendWidget.iconSizeMetrics.heightMetric.value="15dp"
-        androidPlot.legendWidget.iconSizeMetrics.widthMetric.value="15dp"
-        androidPlot.legendWidget.heightMetric.value="25dp"
-        androidPlot.legendWidget.positionMetrics.anchor="right_bottom"/>
+        android:layout_height="wrap_content"
+        android:text="" />
+
+    <Button
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/push_data"
+        android:onClick="pushData" />
 
 </LinearLayout>

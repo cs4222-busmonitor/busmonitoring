@@ -11,5 +11,7 @@
     <string name="start_time">Start time</string>
     <string name="end_time">End time</string>
     <string name="evaluate_file">Evaluate File</string>
-
+	<string name="max_elements">Max Elements</string>
+    <string name="simulation_start">Start Simulation</string>
+    <string name="simulation_stop">Stop Simulation</string>
 </resources>
