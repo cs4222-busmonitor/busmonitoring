@@ -275,7 +275,7 @@ public class SimpleXYPlotActivity extends Activity
         barometerButton = (Button) findViewById(R.id.barometerButton);
         accelerometerButton = (Button) findViewById(R.id.accelerometerButton);
         gyroscopeButton = (Button) findViewById(R.id.gyroscopeButton);
-
+/*
         observer = new FileObserver(Environment
                 .getExternalStorageDirectory().getPath()
                 + "/CS4222DataCollector/") { // set up a file observer to watch this directory on sd card
@@ -300,7 +300,7 @@ public class SimpleXYPlotActivity extends Activity
             }
         };
         observer.startWatching(); //START OBSERVING
-
+*/
     }
 
     private class ChatMessageListener
