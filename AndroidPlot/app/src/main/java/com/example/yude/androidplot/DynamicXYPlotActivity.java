@@ -1,6 +1,7 @@
 package com.example.yude.androidplot;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.*;
 import android.os.Process;
 import android.util.Log;
@@ -947,4 +948,9 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 			return datasource.getY(seriesIndex, index);
 		}
 	}
+    public void simplePlot(View v) {
+        Intent intent = new Intent(this, SimpleXYPlotActivity.class);
+        startActivity(intent);
+        finish();
+    }
 }

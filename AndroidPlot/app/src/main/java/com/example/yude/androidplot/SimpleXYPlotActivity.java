@@ -1,6 +1,7 @@
 package com.example.yude.androidplot;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
@@ -275,7 +276,7 @@ public class SimpleXYPlotActivity extends Activity
                         // Log the exception
                         Log.e("BroadcastApp", "Exception in middleware start listener", e);
                         // Inform the user
-                        createToast("Exception in middleware start listener, check log");
+                       // createToast("Exception in middleware start listener, check log");
                     }
                 }
             });
@@ -1225,5 +1226,10 @@ public class SimpleXYPlotActivity extends Activity
         }
         result = result+"You have a total of "+totalOffenseCount+"\n";
         textViewForResult.setText(result);
+    }
+    public void dynamicPlot(View v) {
+        Intent intent = new Intent(this, DynamicXYPlotActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

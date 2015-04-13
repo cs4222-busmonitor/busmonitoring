@@ -14,4 +14,6 @@
 	<string name="max_elements">Max Elements</string>
     <string name="simulation_start">Start Simulation</string>
     <string name="simulation_stop">Stop Simulation</string>
+    <string name="dynamic_plot">Dynamic Plot</string>
+    <string name="simple_plot">Simple Plot</string>
 </resources>

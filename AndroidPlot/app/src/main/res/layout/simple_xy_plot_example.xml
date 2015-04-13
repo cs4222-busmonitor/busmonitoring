@@ -140,8 +140,16 @@
             android:id="@+id/TextView_EvaluationResult"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="" />
+
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/dynamic_plot"
+            android:onClick="dynamicPlot" />
+
 
     </LinearLayout>
 </ScrollView>

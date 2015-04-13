@@ -176,4 +176,12 @@
         android:text="@string/push_data"
         android:onClick="pushData" />
 
+
+    <Button
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/simple_plot"
+        android:onClick="simplePlot" />
+
 </LinearLayout>
