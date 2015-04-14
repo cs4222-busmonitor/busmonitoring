@@ -919,7 +919,7 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 					}
 				case SERIES_INDEX_HEIGHT:
 					if(list_Baro_Height.size() > 0){
-						list_Baro_Height.get(plotableIndex);
+						return list_Baro_Height.get(plotableIndex);
 					}else{
 						return 0;
 					}
