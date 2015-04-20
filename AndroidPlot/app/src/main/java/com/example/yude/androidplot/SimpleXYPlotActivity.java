@@ -135,6 +135,16 @@ public class SimpleXYPlotActivity extends Activity
     private Spinner spinnerForAllFiles;
     private TextView textViewForResult;
 
+    List<String> listBarometer ;
+    List<String> listAccelerometer;
+    List<String> listGyroscope;
+    List<String> listOfAllFiles ;
+
+    ArrayAdapter<String> dataAdapterBarometer;
+    ArrayAdapter<String> dataAdapterAccelerometer;
+    ArrayAdapter<String> dataAdapterGyroscope;
+    ArrayAdapter<String> dataAdapterForAllFiles;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -342,6 +352,16 @@ public class SimpleXYPlotActivity extends Activity
                 String selectedBarometerFile = message.readString();
                 String selectedAccelerometerFile = message.readString();
                 String selectedGyroscopeFile = message.readString();
+/*
+                listBarometer.add(selectedBarometerFile);
+                listAccelerometer.add(selectedAccelerometerFile);
+                listGyroscope.add(selectedGyroscopeFile);
+                listOfAllFiles.add(selectedBarometerFile);
+                listOfAllFiles.add(selectedAccelerometerFile);
+                listOfAllFiles.add(selectedGyroscopeFile);
+
+   */
+
                 File selectedBarometerFileCSV = message.getFile(0);
                 File selectedAccelerometerFileCSV = message.getFile(1);
                 File selectedGyroscopeFileCSV = message.getFile(2);
@@ -382,6 +402,7 @@ public class SimpleXYPlotActivity extends Activity
                     fc6 = new FileOutputStream(logFileGyroscope).getChannel();
                     fc6.transferFrom(fc5, 0, fc5.size());
 
+
                 }finally{
                     fc1.close();
                     fc2.close();
@@ -389,8 +410,9 @@ public class SimpleXYPlotActivity extends Activity
                     fc4.close();
                     fc5.close();
                     fc6.close();
-                }
 
+
+                }
                 // Append to the message list
                 final String newText =
                         testText.getText() +
@@ -407,6 +429,15 @@ public class SimpleXYPlotActivity extends Activity
                     }
                 });
                 */
+
+             Thread.sleep(2000);
+                handler.post(new Runnable() {
+
+                    public void run() {
+
+                        addItemsOnSpinner();
+                    }
+                });
             } catch (Exception e) {
                 // Log the exception
                 Log.e("BroadcastApp", "Exception on message event", e);
@@ -422,10 +453,10 @@ public class SimpleXYPlotActivity extends Activity
                 + "/CS4222DataCollector/").listFiles();
 
         String result="";
-        List<String> listBarometer = new ArrayList<String>();
-        List<String> listAccelerometer = new ArrayList<String>();
-        List<String> listGyroscope = new ArrayList<String>();
-        List<String> listOfAllFiles = new ArrayList<String>();
+         listBarometer = new ArrayList<String>();
+     listAccelerometer = new ArrayList<String>();
+         listGyroscope = new ArrayList<String>();
+        listOfAllFiles = new ArrayList<String>();
 
         if ( storageDir != null ) {
             for ( File file : storageDir ) {
@@ -443,26 +474,29 @@ public class SimpleXYPlotActivity extends Activity
                     result = result + file.getAbsolutePath() + "\n";
                 }
             }
-            ArrayAdapter<String> dataAdapterBarometer = new ArrayAdapter<String>(this,
+            //createToast("setting adapters");
+
+
+             dataAdapterBarometer = new ArrayAdapter<String>(this,
                     android.R.layout.simple_spinner_item, listBarometer);
             dataAdapterBarometer.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerBarometer.setAdapter(dataAdapterBarometer);
 
-            ArrayAdapter<String> dataAdapterAccelerometer = new ArrayAdapter<String>(this,
+            dataAdapterAccelerometer = new ArrayAdapter<String>(this,
                     android.R.layout.simple_spinner_item, listAccelerometer);
             dataAdapterAccelerometer.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerAccelerometer.setAdapter(dataAdapterAccelerometer);
 
-            ArrayAdapter<String> dataAdapterGyroscope = new ArrayAdapter<String>(this,
+            dataAdapterGyroscope = new ArrayAdapter<String>(this,
                     android.R.layout.simple_spinner_item, listGyroscope);
             dataAdapterGyroscope.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerGyroscope.setAdapter(dataAdapterGyroscope);
 
-            ArrayAdapter<String> dataAdapterForAllFiles = new ArrayAdapter<String>(this,
+            dataAdapterForAllFiles = new ArrayAdapter<String>(this,
                     android.R.layout.simple_spinner_item, listOfAllFiles);
             dataAdapterForAllFiles.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerForAllFiles.setAdapter(dataAdapterForAllFiles);
-
+           // createToast("setting adapters successsfully");
             //testText.setText(result);
         }
     }
