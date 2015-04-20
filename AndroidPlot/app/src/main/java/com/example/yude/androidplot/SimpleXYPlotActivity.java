@@ -811,9 +811,12 @@ public class SimpleXYPlotActivity extends Activity
             startDomain = 0.0;
         }
         plot.setDomainLeftMin(startDomain);
+        plot.setDomainLeftMax(startDomain);
         if (endDomain < 0.0) {
+            plot.setDomainRightMin(0);
             plot.setDomainRightMax(999999999);
         } else {
+            plot.setDomainRightMin(endDomain);
             plot.setDomainRightMax(endDomain);
         }
 
