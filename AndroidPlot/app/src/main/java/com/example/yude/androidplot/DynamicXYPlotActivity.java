@@ -551,7 +551,7 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 	}
 
 	// negative denotes start of range (effectively, no input specified)
-	private double getPlotStartRange() {
+	private double getPlotStartDomain() {
 		String startRangeStr = ((EditText) findViewById(R.id.plotStartRange)).getText().toString();
 		double startRange;
 		if (startRangeStr == null || startRangeStr.isEmpty()) {
@@ -559,12 +559,12 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 		} else {
 			startRange = Double.parseDouble(startRangeStr);
 		}
-		Log.v("getPlotStartRange()", "startRange = " + startRange);
+		Log.v("getPlotStartDomain()", "startRange = " + startRange);
 		return startRange;
 	}
 
 	// Negative end range denotes, effectively, no input
-	private double getPlotEndRange() {
+	private double getPlotEndDomain() {
 		String endRangeStr = ((EditText) findViewById(R.id.plotEndRange)).getText().toString();
 		double endRange;
 		if (endRangeStr == null || endRangeStr.isEmpty()) {
@@ -572,7 +572,7 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 		} else {
 			endRange = Double.parseDouble(endRangeStr);
 		}
-		Log.v("getPlotEndRange()", "endRange = " + endRange);
+		Log.v("getPlotEndDomain()", "endRange = " + endRange);
 		return endRange;
 	}
 
@@ -597,13 +597,13 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 		if(start != null){
 			startRange = start;
 		}else {
-			startRange = getPlotStartRange();
+			startRange = getPlotStartDomain();
 		}
 
 		if(end != null){
 			endRange = end;
 		}else {
-			endRange = getPlotEndRange();
+			endRange = getPlotEndDomain();
 		}
 
 		if (startRange < 0.0) {

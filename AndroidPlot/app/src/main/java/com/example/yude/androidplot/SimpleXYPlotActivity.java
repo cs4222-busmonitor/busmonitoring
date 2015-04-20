@@ -771,17 +771,50 @@ public class SimpleXYPlotActivity extends Activity
     }
 
     private void preparePlot() {
-        double startRange = getPlotStartRange();
-        double endRange = getPlotEndRange();
-        if (startRange < 0.0) {
-            startRange = 0.0;
+        double startDomain = getPlotStartDomain();
+        double endDomain = getPlotEndDomain();
+        if (startDomain < 0.0) {
+            startDomain = 0.0;
         }
-        plot.setDomainLeftMin(startRange);
-        if (endRange < 0.0) {
+        plot.setDomainLeftMin(startDomain);
+        if (endDomain < 0.0) {
             plot.setDomainRightMax(999999999);
         } else {
-            plot.setDomainRightMax(endRange);
+            plot.setDomainRightMax(endDomain);
         }
+
+        double startRange = getPlotStartRange();
+        double endRange = getPlotEndRange();
+        plot.setRangeBottomMin(startRange);
+        plot.setRangeBottomMax(startRange);
+        plot.setRangeTopMin(endRange);
+        plot.setRangeTopMax(endRange);
+    }
+
+    // negative denotes start of domain (effectively, no input specified)
+    private double getPlotStartDomain() {
+        String startDomainStr = ((EditText) findViewById(R.id.plotStartDomain)).getText().toString();
+        double startDomain;
+        if (startDomainStr == null || startDomainStr.isEmpty()) {
+            startDomain = -1.0; // not specified, start from the start
+        } else {
+            startDomain = Double.parseDouble(startDomainStr);
+        }
+        Log.v("getPlotStartDomain()", "startDomain = " + startDomain);
+        return startDomain;
+    }
+
+    // Negative end domain denotes, effectively, no input
+    private double getPlotEndDomain() {
+        String endDomainStr = ((EditText) findViewById(R.id.plotEndDomain)).getText().toString();
+        double endDomain;
+        if (endDomainStr == null || endDomainStr.isEmpty()) {
+            endDomain = -1.0; // negative to denote that we should plot to the end of the data
+        } else {
+            endDomain = Double.parseDouble(endDomainStr);
+        }
+        Log.v("getPlotEndDomain()", "endDomain = " + endDomain);
+        return endDomain;
     }
 
     // negative denotes start of range (effectively, no input specified)

@@ -52,15 +52,38 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="@string/start_time"
-                android:inputType="numberDecimal"
-                android:id="@+id/plotStartRange" />
+                android:inputType="numberDecimal|numberSigned"
+                android:id="@+id/plotStartDomain" />
 
             <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="@string/end_time"
-                android:inputType="numberDecimal"
+                android:inputType="numberDecimal|numberSigned"
+                android:id="@+id/plotEndDomain" />
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/start_value"
+                android:inputType="numberDecimal|numberSigned"
+                android:id="@+id/plotStartRange" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/end_value"
+                android:inputType="numberDecimal|numberSigned"
                 android:id="@+id/plotEndRange" />
         </LinearLayout>
 
