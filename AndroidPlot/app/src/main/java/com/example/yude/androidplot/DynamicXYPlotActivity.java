@@ -779,6 +779,7 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 		private MyObservable notifier;
 		private boolean keepRunning = false;
 		private boolean isPause = false;
+		private long interval = 0;
 
 		public MonitorData(){
 			notifier = new MyObservable();
@@ -812,9 +813,31 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 			try {
 				keepRunning = true;
 				while (keepRunning) {
-					Thread.sleep(200); // decrease or remove to speed up the refresh rate.
-					if(!isPause) readingCount++;
-//					Log.v("Count", "Count " + readingCount);
+					Thread.sleep(interval); // decrease or remove to speed up the refresh rate.
+					if (!isPause) {
+						readingCount++;
+						Double previousSec = 0.0;
+						Double currentSec = 0.2;
+						if(list_Accel_Time.size()>0 && list_Accel_Time.size() > readingCount){
+
+							previousSec = list_Accel_Time.get(readingCount-1);
+							currentSec = list_Accel_Time.get(readingCount);
+
+						}else if(list_Baro_Time.size()>0 && list_Baro_Time.size() > readingCount){
+
+							previousSec = list_Baro_Time.get(readingCount-1);
+							currentSec = list_Baro_Time.get(readingCount);
+
+						}else if(list_Gyro_Time.size()>0 && list_Gyro_Time.size() > readingCount){
+
+							previousSec = list_Gyro_Time.get(readingCount-1);
+							currentSec = list_Gyro_Time.get(readingCount);
+
+						}
+
+						interval = (int) ((currentSec - previousSec) * 1000.0);
+						Log.v("Count", "Count " + readingCount+" interval "+interval);
+					}
 					notifier.notifyObservers();
 				}
 			} catch (InterruptedException e) {
@@ -896,7 +919,7 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 					}
 				case SERIES_INDEX_HEIGHT:
 					if(list_Baro_Height.size() > 0){
-						list_Baro_Height.get(plotableIndex);
+						return list_Baro_Height.get(plotableIndex);
 					}else{
 						return 0;
 					}
@@ -948,9 +971,9 @@ public class DynamicXYPlotActivity extends Activity implements View.OnClickListe
 			return datasource.getY(seriesIndex, index);
 		}
 	}
-    public void simplePlot(View v) {
-        Intent intent = new Intent(this, SimpleXYPlotActivity.class);
-        startActivity(intent);
-        finish();
-    }
+	public void simplePlot(View v) {
+		Intent intent = new Intent(this, SimpleXYPlotActivity.class);
+		startActivity(intent);
+		finish();
+	}
 }
